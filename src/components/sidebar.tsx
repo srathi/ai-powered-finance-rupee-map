@@ -222,36 +222,6 @@ export function Sidebar() {
 
         <div className="h-px bg-border/30 mb-2" />
 
-        {/* Case Studies & Roadmap */}
-        <Link
-          href="/case-studies"
-          onClick={() => setMobileOpen(false)}
-          className={cn(
-            "flex items-center px-4 py-2.5 rounded-xl transition-all",
-            pathname === "/case-studies"
-              ? "bg-primary/10 text-primary"
-              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface"
-          )}
-        >
-          <BookOpen className="h-4 w-4 mr-3" />
-          <span className="text-sm">Case Studies</span>
-        </Link>
-        <Link
-          href="/roadmap"
-          onClick={() => setMobileOpen(false)}
-          className={cn(
-            "flex items-center px-4 py-2.5 rounded-xl transition-all",
-            pathname === "/roadmap"
-              ? "bg-primary/10 text-primary"
-              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface"
-          )}
-        >
-          <Map className="h-4 w-4 mr-3" />
-          <span className="text-sm">Roadmap</span>
-        </Link>
-
-        <div className="h-px bg-border/30 my-2" />
-
         {categories.map((cat) => {
           const active = isCategoryActive(cat);
           const expanded = expandedCategory === cat.name || active;
@@ -315,6 +285,36 @@ export function Sidebar() {
             </div>
           );
         })}
+
+        <div className="h-px bg-border/30 my-2" />
+
+        {/* Case Studies & Roadmap */}
+        <Link
+          href="/case-studies"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center px-4 py-2.5 rounded-xl transition-all",
+            pathname === "/case-studies"
+              ? "bg-primary/10 text-primary"
+              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface"
+          )}
+        >
+          <BookOpen className="h-4 w-4 mr-3" />
+          <span className="text-sm">Case Studies</span>
+        </Link>
+        <Link
+          href="/roadmap"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center px-4 py-2.5 rounded-xl transition-all",
+            pathname === "/roadmap"
+              ? "bg-primary/10 text-primary"
+              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface"
+          )}
+        >
+          <Map className="h-4 w-4 mr-3" />
+          <span className="text-sm">Roadmap</span>
+        </Link>
       </nav>
 
       {/* Footer */}
