@@ -115,13 +115,11 @@
 
 ## What's Pending / Known Issues
 
-### Stochastic Calculator
-- Results differ from reference (~₹3.03Cr vs ₹3.78Cr) due to different historical data
-- This is expected behavior
-
-### Test Adequacy
-- Outputs ~19.6% failure rate vs reference's ~53% for ₹2.28Cr corpus
-- Expected difference due to different simulation data
+### Historical Data (Fixed)
+- Debt returns were unrealistically high (avg 15.4% CAGR)
+- Fixed to realistic Indian FD rates (avg 8.4% CAGR)
+- 1980s: 10-12%, 2000s: 8-9%, 2010s: 7-8%, 2020s: 5-7%
+- Stochastic and Test Adequacy calculators now produce more accurate results
 
 ### Mobile App (On Hold)
 - Capacitor integration planned for Android/iOS
