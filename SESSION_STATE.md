@@ -2,13 +2,15 @@
 
 ## Project Overview
 - **Name**: RupeeMap (formerly RetireWise)
-- **Stack**: Next.js 16, React 19, TypeScript, TailwindCSS 4, shadcn/ui (base-nova), Framer Motion, Recharts, Zustand
+- **Stack**: Next.js 16, React 19, TypeScript, TailwindCSS 4, shadcn/ui (base-nova), Framer Motion, Recharts, Zustand, Groq SDK
 - **Location**: `/Users/sandesh/Desktop/myProjects/AIFinanceRupeeMap`
+- **Repository**: `git@github.com:srathi/ai-powered-finance-rupee-map.git`
+- **Live**: `https://ai-powered-finance-rupee-map.vercel.app`
 
 ## What's Done
 
 ### Core Functionality
-- 58 calculator pages across 8 categories (Retirement, Investment, Loan, Tax, Savings, Insurance, Business, General)
+- **73 total routes** (58 calculators + 15 additional pages)
 - Financial engine: `math.ts`, `loan.ts`, `tax.ts`, `savings.ts`, `gst.ts`, `insurance.ts`
 - Retirement engine: `retirement.ts`, `stochastic.ts`, `inflation.ts`, `compound.ts`
 - Historical data: 564 monthly records (1979–2025) in `src/data/historical-returns.ts`
@@ -57,8 +59,59 @@
 - Removed "Median Final Corpus (P50)" card
 
 ### Landing Page Background
-- Logo as subtle background watermark at 20% opacity
-- Positioned to left side, 37.5% width
+- Logo as subtle background watermark at 40% opacity
+- Positioned to both left and right sides
+
+### ArthaAI Chatbot (Complete)
+- **API Route**: `/api/chat` — Groq SDK streaming endpoint
+- **UI**: `/chat` — Full-page chat interface with localStorage history
+- **Model**: Llama 3.3 70B via Groq
+- **Features**: Markdown rendering, rate limiting (15 req/min), chat history
+- **RAG**: 51 chunks from research PDF (`src/data/research-chunks.json`)
+- **System Prompt**: Indian financial context (₹, PPF, NPS, ELSS, Nifty 50, SEBI)
+- **Components**: `chat-message.tsx`, `chat/page.tsx`
+
+### Stock Price Lookup (Complete)
+- **API Routes**: `/api/stock-price` (Yahoo Finance proxy), `/api/stock-search` (search proxy)
+- **UI**: `/stock-price` — Autocomplete search with dropdown
+- **Features**: 30s price cache, 10s search cache, NSE/BSE support
+- **Components**: `stock-card.tsx`, `stock-price/page.tsx`
+
+### Financial Literacy Section (Complete)
+- **Kids Section**: 15 lessons across 3 courses with quizzes
+  - Money Basics (5 lessons)
+  - Smart Money Habits (5 lessons)
+  - Real World Money (5 lessons)
+- **General Section**: 7 in-depth articles
+  - Budgeting 101, Emergency Fund, Power of SIP, Understanding Taxes, Insurance Guide, Managing Debt, Real Estate Basics
+- **Progress**: localStorage persistence, badge system
+- **Components**: `quiz-card.tsx`, `lesson-layout.tsx`
+- **Data**: `learn-data.ts`, `general-learn-data.ts`
+
+### Case Studies Page (Complete)
+- **Route**: `/case-studies`
+- **6 Case Studies**: Ravi (SIP), Priya (Tax), The Kumars (Home Loan), Arjun (FIRE), Meera (Tax Regime), The Sharmas (Education Goal)
+- **Features**: Category filtering, expand/collapse cards, metrics tables, quotes
+- **Data**: `case-studies-data.ts`
+
+### Roadmap Page (Complete)
+- **Route**: `/roadmap`
+- **4 Columns**: Your Ideas, Coming Soon, In Progress, Recently Shipped
+- **16 Features**: Across categories (Calculators, Tax, Loan, Investment, AI, etc.)
+- **Features**: Category filtering, GitHub Issues integration
+- **Data**: `roadmap-data.ts`
+
+### Sidebar Updates
+- ArthaAI link at top with cyan gradient and "AI" badge
+- Learn section with separators ("— Kids —", "— General —")
+- Case Studies and Roadmap links at bottom
+- Mobile hamburger menu with overlay
+
+### Footer Updates
+- "Rupee" in white, "Map" in blue
+- Working links to Case Studies and Roadmap
+- "Powered by ArthaAI" badge
+- Research paper link
 
 ## What's Pending / Known Issues
 
@@ -70,10 +123,9 @@
 - Outputs ~19.6% failure rate vs reference's ~53% for ₹2.28Cr corpus
 - Expected difference due to different simulation data
 
-### Footer
-- "Made in India" duplicate removed
-- Credits: "Built by Sandesh Rathi" with "Made with love in India"
-- Research paper linked: `public/research/ssrn-5381648-dynamic.pdf`
+### Mobile App (On Hold)
+- Capacitor integration planned for Android/iOS
+- Currently paused — revisit later
 
 ## Key Files
 - `src/app/globals.css` — Stitch design system CSS variables
@@ -85,15 +137,35 @@
 - `src/components/summary-cards.tsx` — Glass metric cards
 - `src/components/input-controls.tsx` — InputField and SliderField
 - `src/components/results-table.tsx` — Glass results table
+- `src/components/chat-message.tsx` — Chat bubble with markdown
+- `src/components/quiz-card.tsx` — Quiz component
+- `src/components/lesson-layout.tsx` — Lesson page wrapper
+- `src/components/stock-card.tsx` — Stock data display
 - `src/lib/financial/tax.ts` — Tax calculations
 - `src/lib/calculations/retirement.ts` — Deterministic calculator
 - `src/lib/calculations/stochastic.ts` — Monte Carlo, SWR, test adequacy
+- `src/lib/learn-data.ts` — Kids course content
+- `src/lib/general-learn-data.ts` — General articles
+- `src/lib/case-studies-data.ts` — Case study content
+- `src/lib/roadmap-data.ts` — Roadmap features
+- `src/data/historical-returns.ts` — 564 monthly records (1979-2025)
+- `src/data/research-chunks.json` — 51 RAG chunks from PDF
+- `src/app/api/chat/route.ts` — ArthaAI streaming endpoint
+- `src/app/api/stock-price/route.ts` — Yahoo Finance price proxy
+- `src/app/api/stock-search/route.ts` — Yahoo Finance search proxy
 - `src/app/page.tsx` — Landing page
 - `src/app/what-if/page.tsx` — What-if calculator (10k sims)
+- `src/app/chat/page.tsx` — ArthaAI chat interface
+- `src/app/case-studies/page.tsx` — Case studies listing
+- `src/app/roadmap/page.tsx` — Roadmap page
 - `DESIGN_BRIEF.md` — Design brief for Google Stitch
+- `USER_GUIDE.md` — User guide with all features documented
 - `stitch_design_document_manager/` — Stitch design outputs
 
 ## Build Status
-- `npm run build` passes clean (58 static pages)
+- `npm run build` passes clean (73 static pages)
 - No TypeScript errors
-- No broken links (all routes verified)
+- No broken links (all routes verified via HTTP testing)
+- All 73 pages returning 200 OK
+- All 3 API endpoints working
+- Both static assets (logo.png, research PDF) accessible
