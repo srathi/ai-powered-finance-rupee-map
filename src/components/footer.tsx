@@ -96,14 +96,14 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <span className="hover:text-primary transition-colors cursor-default">
+              <Link href="/case-studies" className="hover:text-primary transition-colors">
                 Case Studies
-              </span>
+              </Link>
             </li>
             <li>
-              <span className="hover:text-primary transition-colors cursor-default">
+              <Link href="/roadmap" className="hover:text-primary transition-colors">
                 Roadmap
-              </span>
+              </Link>
             </li>
           </ul>
         </div>
