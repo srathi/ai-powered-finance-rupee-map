@@ -478,6 +478,60 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Portfolio Review Section */}
+      <section className="px-6 py-16">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 via-primary/5 to-transparent border border-emerald-500/10 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-primary/20 flex items-center justify-center">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                      <span className="text-on-surface">AI </span>
+                      <span className="text-emerald-400">Portfolio</span>
+                      <span className="text-primary"> Review</span>
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Get personalized investment analysis
+                    </p>
+                  </div>
+                </div>
+                <p className="text-on-surface-variant mb-6 max-w-lg">
+                  Enter your investments and get AI-powered analysis of your
+                  portfolio allocation, diversification, and risk — with specific
+                  recommendations to optimize for growth.
+                </p>
+                <Link href="/portfolio-review">
+                  <Button size="lg" className="gap-2 bg-gradient-to-r from-emerald-500 to-primary text-white hover:opacity-90">
+                    Analyze My Portfolio
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="hidden md:block w-64 shrink-0">
+                <div className="space-y-3">
+                  {[
+                    "Is my portfolio well-diversified?",
+                    "Am I taking too much risk?",
+                    "How to optimize for tax savings?",
+                  ].map((q, i) => (
+                    <div
+                      key={i}
+                      className="px-4 py-2.5 rounded-xl bg-surface-container-high/50 border border-border/30 text-sm text-muted-foreground"
+                    >
+                      📈 &quot;{q}&quot;
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="max-w-[1440px] mx-auto">

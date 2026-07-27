@@ -20,6 +20,7 @@ import {
   Menu,
   BookOpen,
   Map,
+  PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -216,6 +217,24 @@ export function Sidebar() {
             </p>
           </div>
           <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium">
+            AI
+          </span>
+        </Link>
+
+        {/* Portfolio Review */}
+        <Link
+          href="/portfolio-review"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center px-4 py-2.5 rounded-xl transition-all",
+            pathname === "/portfolio-review"
+              ? "bg-gradient-to-r from-emerald-500/10 to-primary/10 border border-emerald-500/20 text-emerald-400"
+              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface border border-transparent"
+          )}
+        >
+          <PieChart className="h-4 w-4 mr-3" />
+          <span className="text-sm font-medium">Portfolio Review</span>
+          <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">
             AI
           </span>
         </Link>
