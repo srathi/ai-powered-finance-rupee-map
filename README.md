@@ -1,10 +1,10 @@
 # RupeeMap
 
-A production-ready financial calculator web application with 58+ calculators, AI-powered chatbot, and interactive financial literacy platform.
+A production-ready financial calculator web application with 58+ calculators, AI-powered chatbot, portfolio analysis, and interactive financial literacy platform.
 
 ## Overview
 
-RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuring retirement planning calculators, investment tools, loan calculators, tax planning, insurance analysis, and a RAG-powered AI chatbot (ArthaAI) for financial guidance with Indian market context.
+RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuring retirement planning calculators, investment tools, loan calculators, tax planning, insurance analysis, AI-powered portfolio review, and a RAG-powered AI chatbot (ArthaAI) for financial guidance with Indian market context.
 
 ## Tech Stack
 
@@ -37,12 +37,14 @@ AIFinanceRupeeMap/
 │   ├── app/                              # Next.js App Router pages
 │   │   ├── api/                          # API routes
 │   │   │   ├── chat/route.ts             # ArthaAI streaming endpoint
+│   │   │   ├── portfolio-review/route.ts # AI portfolio analysis
 │   │   │   ├── stock-price/route.ts      # Yahoo Finance price proxy
 │   │   │   └── stock-search/route.ts     # Yahoo Finance search proxy
 │   │   ├── learn/                        # Financial literacy section
 │   │   │   ├── [course]/[lesson]/        # Kids lessons with quizzes
 │   │   │   └── general/[topic]/          # General finance articles
 │   │   ├── chat/                         # ArthaAI chat interface
+│   │   ├── portfolio-review/             # AI portfolio analysis page
 │   │   ├── deterministic/                # Retirement calculators
 │   │   ├── stochastic/
 │   │   ├── what-if/
@@ -65,7 +67,11 @@ AIFinanceRupeeMap/
 │   │   ├── chart-components.tsx          # Recharts wrappers
 │   │   ├── quiz-card.tsx                 # Quiz component
 │   │   ├── lesson-layout.tsx             # Lesson page wrapper
-│   │   └── chat-message.tsx              # Chat bubble with markdown
+│   │   ├── chat-message.tsx              # Chat bubble with markdown
+│   │   ├── portfolio-form.tsx            # Portfolio entry form
+│   │   └── portfolio-analysis.tsx        # Portfolio results display
+│   ├── types/
+│   │   └── portfolio.ts                  # Portfolio data types
 │   ├── lib/
 │   │   ├── calculations/                 # Core calculation engines
 │   │   │   ├── math.ts                   # SWR formula, utility functions
@@ -106,6 +112,7 @@ graph TB
         B --> E[Learn Section]
         B --> F[ArthaAI Chat]
         B --> G[Stock Price Lookup]
+        B --> H[Portfolio Review]
     end
 
     subgraph "Component Layer"
@@ -141,6 +148,8 @@ graph TB
         Y --> Z[Groq SDK]
         Z --> AA[Llama 3.3 70B]
         Y --> W
+        H --> AB[Portfolio Review API]
+        AB --> Z
     end
 ```
 
@@ -165,6 +174,7 @@ graph LR
         B --> B7[CAGR]
         B --> B8[XIRR]
         B --> B9[Stock Prices]
+        B --> B10[Portfolio Review]
 
         C[Loan] --> C1[EMI]
         C --> C2[Home Loan]
@@ -237,6 +247,30 @@ sequenceDiagram
     LLM-->>API: Streaming response
     API-->>Chat: Text stream
     Chat-->>U: Rendered markdown
+```
+
+### Portfolio Review Architecture
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant Form as Portfolio Form
+    participant API as /api/portfolio-review
+    participant Calc as Allocation Calculator
+    participant LLM as Groq/Llama 3.3
+    participant Chart as Results Display
+
+    U->>Form: Enter investments
+    Form->>API: POST /api/portfolio-review
+    API->>Calc: calculateAllocation(investments)
+    Calc-->>API: { equity: 47%, debt: 53%, ... }
+    API->>Calc: estimateProjectedValue(total, allocation)
+    Calc-->>API: 10-year projection
+    API->>LLM: System prompt + portfolio data
+    LLM-->>API: 5 personalized recommendations
+    API-->>Form: AnalysisResult object
+    Form->>Chart: Render pie chart + metrics
+    Chart-->>U: Display analysis
 ```
 
 ### Learn Section Architecture
@@ -320,6 +354,15 @@ graph TB
 - Chat history persistence (localStorage)
 - Markdown rendering with tables, lists, code blocks
 
+### AI Portfolio Review
+- Groq-powered portfolio analysis with personalized recommendations
+- Investment entry form with templates (Moderate ₹50L, Aggressive ₹25L)
+- Dynamic add/remove investments with category classification
+- Asset allocation pie chart (equity, debt, gold, real estate, other)
+- Risk score assessment (low/medium/high) based on age, profile, and allocation
+- 10-year projected value based on weighted category returns
+- AI-generated recommendations (rebalancing, tax optimization, diversification)
+
 ### Financial Literacy Platform
 - **Kids Section**: 15 lessons across 3 courses with quizzes
 - **General Section**: 7 in-depth articles with real-world Indian examples
@@ -374,6 +417,7 @@ npm start
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/chat` | POST | ArthaAI streaming chat (Groq SDK) |
+| `/api/portfolio-review` | POST | AI portfolio analysis (Groq SDK) |
 | `/api/stock-price` | GET | Yahoo Finance price proxy |
 | `/api/stock-search` | GET | Yahoo Finance search proxy |
 
