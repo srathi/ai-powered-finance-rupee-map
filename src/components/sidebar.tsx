@@ -341,7 +341,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-6 py-4 border-t border-outline-variant/20">
         <p className="text-xs text-outline">
-          For personalized portfolio planning,
+          For personalized portfolio plan,
         </p>
         <p className="text-xs text-outline">
           please contact:{" "}
