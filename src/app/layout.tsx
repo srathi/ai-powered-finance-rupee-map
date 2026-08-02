@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "RupeeMap — Mapping Your Financial Future",
-    template: "%s | RupeeMap",
+    template: "%s | RupeeMap: Mapping the Financial Plan",
   },
   description:
     "Precision-engineered financial tools for the modern Indian investor. Navigate retirement, taxes, and investments with institutional-grade data.",
