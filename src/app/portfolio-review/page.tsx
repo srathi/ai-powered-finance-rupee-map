@@ -121,6 +121,42 @@ export default function PortfolioReviewPage() {
               )}
             </motion.div>
           )}
+
+          {/* Human Advisor CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded-xl bg-primary/10 shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-on-surface">
+                  Planning a portfolio? Let&apos;s talk.
+                </h3>
+                <p className="text-sm text-on-surface-variant mt-1">
+                  For a personalized portfolio plan, reach out to{" "}
+                  <a
+                    href="mailto:sandesh@rupeemap.in"
+                    className="text-primary hover:underline"
+                  >
+                    sandesh@rupeemap.in
+                  </a>
+                  .
+                </p>
+              </div>
+            </div>
+            <a
+              href="mailto:sandesh@rupeemap.in"
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+            >
+              Reach Out
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+            </a>
+          </motion.div>
         </div>
       </section>
     </div>

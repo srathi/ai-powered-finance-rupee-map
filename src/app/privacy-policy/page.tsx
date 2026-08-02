@@ -70,7 +70,13 @@ export default function PrivacyPolicyPage() {
             <CardTitle>7. Contact</CardTitle>
           </CardHeader>
           <CardContent className="text-on-surface-variant">
-            <p>For questions about this Privacy Policy, please reach out via our GitHub repository or email.</p>
+            <p>
+              For questions about this Privacy Policy, contact us at{" "}
+              <a href="mailto:support@rupeemap.in" className="text-primary hover:underline">
+                support@rupeemap.in
+              </a>
+              .
+            </p>
           </CardContent>
         </Card>
       </div>

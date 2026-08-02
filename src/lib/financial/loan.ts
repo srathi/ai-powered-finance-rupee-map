@@ -97,7 +97,8 @@ export function prepaymentImpact(
   // Recalculate after prepayment
   const r = inputs.annualRatePercent / 100 / 12;
   let balance = inputs.principal;
-  let currentEmi = emi(inputs.principal, inputs.annualRatePercent, inputs.tenureMonths);
+  const originalEmi = emi(inputs.principal, inputs.annualRatePercent, inputs.tenureMonths);
+  let currentEmi = originalEmi;
   let newTenure = inputs.tenureMonths;
 
   // Simulate up to prepayment month
@@ -146,7 +147,7 @@ export function prepaymentImpact(
     let b: number, em: number;
     if (m <= prepayAtMonth) {
       b = newBalance;
-      em = currentEmi;
+      em = originalEmi;
       const interest = b * r;
       const principalPart = em - interest;
       newBalance -= principalPart;

@@ -21,6 +21,7 @@ import {
   BookOpen,
   Map,
   PieChart,
+  Focus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +82,7 @@ const categories: Category[] = [
       { name: "XIRR Calculator", href: "/xirr-calculator" },
       { name: "Returns Calculator", href: "/returns-calculator" },
       { name: "Stock Prices", href: "/stock-price" },
+      { name: "Fund Compare", href: "/fund-compare" },
     ],
   },
   {
@@ -341,8 +343,18 @@ export function Sidebar() {
         <p className="text-xs text-outline">
           Built by Sandesh Rathi
         </p>
+        <a
+          href="mailto:sandesh@rupeemap.in"
+          className="text-xs text-outline mt-1 block hover:text-on-surface transition-colors"
+        >
+          sandesh@rupeemap.in
+        </a>
         <p className="text-xs text-outline mt-1">
-          Handcrafted at Home
+          Institutional-Grade Finance
+        </p>
+        <p className="text-xs text-outline">
+          Made in Pune with Precision{" "}
+          <Focus className="h-3 w-3 inline-block -mt-0.5 text-outline" />
         </p>
       </div>
     </div>

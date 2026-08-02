@@ -38,6 +38,8 @@ AIFinanceRupeeMap/
 │   │   ├── api/                          # API routes
 │   │   │   ├── chat/route.ts             # ArthaAI streaming endpoint
 │   │   │   ├── portfolio-review/route.ts # AI portfolio analysis
+│   │   │   ├── mutual-fund-search/route.ts # MFAPI search proxy
+│   │   │   ├── mutual-fund-data/route.ts   # MFAPI NAV data proxy
 │   │   │   ├── stock-price/route.ts      # Yahoo Finance price proxy
 │   │   │   └── stock-search/route.ts     # Yahoo Finance search proxy
 │   │   ├── learn/                        # Financial literacy section
@@ -45,6 +47,7 @@ AIFinanceRupeeMap/
 │   │   │   └── general/[topic]/          # General finance articles
 │   │   ├── chat/                         # ArthaAI chat interface
 │   │   ├── portfolio-review/             # AI portfolio analysis page
+│   │   ├── fund-compare/                 # Mutual fund comparison page
 │   │   ├── deterministic/                # Retirement calculators
 │   │   ├── stochastic/
 │   │   ├── what-if/
@@ -69,9 +72,11 @@ AIFinanceRupeeMap/
 │   │   ├── lesson-layout.tsx             # Lesson page wrapper
 │   │   ├── chat-message.tsx              # Chat bubble with markdown
 │   │   ├── portfolio-form.tsx            # Portfolio entry form
-│   │   └── portfolio-analysis.tsx        # Portfolio results display
+│   │   ├── portfolio-analysis.tsx        # Portfolio results display
+│   │   └── fund-compare-card.tsx         # Fund comparison card
 │   ├── types/
-│   │   └── portfolio.ts                  # Portfolio data types
+│   │   ├── portfolio.ts                  # Portfolio data types
+│   │   └── mutual-fund.ts                # Mutual fund data types
 │   ├── lib/
 │   │   ├── calculations/                 # Core calculation engines
 │   │   │   ├── math.ts                   # SWR formula, utility functions
@@ -338,7 +343,7 @@ graph TB
 
 ### 58+ Financial Calculators
 - **Retirement**: Deterministic, Stochastic, Test Adequacy, What-if, Withdrawal Rates, History Back-test
-- **Investment**: SIP, Lumpsum, Step-up SIP, SWP, STP, Goal Planner, CAGR, XIRR, Returns, Stock Prices
+- **Investment**: SIP, Lumpsum, Step-up SIP, SWP, STP, Goal Planner, CAGR, XIRR, Returns, Stock Prices, Fund Compare
 - **Loan**: EMI, Home, Car, Personal, Education, Eligibility, Affordability, Balance, Comparison, Prepayment
 - **Tax**: Income Tax, Old vs New Regime, HRA, Gratuity, Leave Encashment, Section 80C
 - **Savings**: FD, RD, PPF, EPF, NPS, Sukanya, NSC, SCSS

@@ -17,6 +17,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Cell,
 } from "recharts";
 
 export default function OldVsNewRegimePage() {
@@ -121,7 +122,7 @@ export default function OldVsNewRegimePage() {
                     />
                     <Bar dataKey="tax" name="Tax Amount" radius={[4, 4, 0, 0]}>
                       {chartData.map((entry, index) => (
-                        <rect key={`cell-${index}`} fill={entry.fill} />
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Bar>
                   </BarChart>

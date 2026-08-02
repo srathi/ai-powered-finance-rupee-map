@@ -132,7 +132,6 @@ export function calculateEPF(
   const monthlyEmployee = monthlyBasic * (epfRatePercent / 100);
   const monthlyEmployer = monthlyBasic * (epfRatePercent / 100);
   const r = annualRatePercent / 100;
-  const schedule: EPFResult["yearlySchedule"][] = [];
   let balance = 0;
   let totalEmp = 0;
   let totalEr = 0;

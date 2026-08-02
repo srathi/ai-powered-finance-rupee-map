@@ -172,6 +172,10 @@ export function calculateXirr(
 ): number {
   if (cashflows.length < 2) return 0;
 
+  const hasPositive = cashflows.some((cf) => cf.amount > 0);
+  const hasNegative = cashflows.some((cf) => cf.amount < 0);
+  if (!hasPositive || !hasNegative) return 0;
+
   const sorted = [...cashflows].sort((a, b) => a.date.getTime() - b.date.getTime());
   const t0 = sorted[0].date.getTime();
 

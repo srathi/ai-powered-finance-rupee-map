@@ -510,6 +510,13 @@ export default function HomePage() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
+                <p className="text-sm text-muted-foreground mt-4">
+                  For a personalized portfolio plan, reach out to{" "}
+                  <a href="mailto:sandesh@rupeemap.in" className="text-primary hover:underline">
+                    sandesh@rupeemap.in
+                  </a>
+                  .
+                </p>
               </div>
               <div className="hidden md:block w-64 shrink-0">
                 <div className="space-y-3">

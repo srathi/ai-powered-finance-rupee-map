@@ -30,7 +30,8 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="mailto:support@rupeemap.com"
+              href="mailto:support@rupeemap.in"
+              title="Email support"
               className="w-10 h-10 rounded-full glass-effect flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,6 +39,15 @@ export function Footer() {
               </svg>
             </a>
           </div>
+          <a
+            href="mailto:support@rupeemap.in"
+            className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Contact Support — support@rupeemap.in
+          </a>
         </div>
 
         {/* Resources */}

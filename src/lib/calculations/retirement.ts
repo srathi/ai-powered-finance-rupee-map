@@ -11,7 +11,7 @@ import type {
  * This is the standard retirement corpus calculation that assumes:
  * - Constant equity return, debt return, and inflation each year
  * - Monthly compounding
- * - Withdrawals happen at the start of each month
+ * - Withdrawals happen at the end of each month
  * - Portfolio earns blended return based on equity/debt allocation
  *
  * The algorithm works by:
@@ -180,7 +180,6 @@ function generateDeterministicEvolution(
     const totalGain = equityGain + debtGain;
     const afterTaxGain = totalGain > 0 ? totalGain * taxMultiplier : totalGain;
 
-    const previousCorpus = corpus;
     corpus = corpus + afterTaxGain - monthlyExpense;
 
     data.push({
@@ -204,8 +203,7 @@ function generateDeterministicEvolution(
  * Converts monthly evolution data to a monthly table format.
  */
 export function toMonthlyTable(data: CorpusEvolution[]): MonthlyTableData[] {
-  return data.map((row, idx) => {
-    const prevCorpus = idx > 0 ? data[idx - 1].corpus : row.corpus;
+  return data.map((row) => {
     return {
       month: row.month,
       year: row.year,
