@@ -341,14 +341,17 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-6 py-4 border-t border-outline-variant/20">
         <p className="text-xs text-outline">
-          Built by Sandesh Rathi
+          For personalized portfolio planning,
         </p>
-        <a
-          href="mailto:sandesh@rupeemap.in"
-          className="text-xs text-outline mt-1 block hover:text-on-surface transition-colors"
-        >
-          sandesh@rupeemap.in
-        </a>
+        <p className="text-xs text-outline">
+          please contact:{" "}
+          <a
+            href="mailto:sandesh@rupeemap.in"
+            className="hover:text-on-surface transition-colors"
+          >
+            sandesh@rupeemap.in
+          </a>
+        </p>
         <p className="text-xs text-outline mt-1">
           Institutional-Grade Finance
         </p>
