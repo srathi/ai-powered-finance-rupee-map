@@ -13,7 +13,7 @@ const CHAT_MODELS = [
 ];
 
 async function createStream(
-  messages: { role: string; content: string }[]
+  messages: Groq.Chat.Completions.ChatCompletionMessageParam[]
 ): Promise<AsyncIterable<Groq.Chat.Completions.ChatCompletionChunk>> {
   let lastError: unknown = null;
   for (const model of CHAT_MODELS) {
