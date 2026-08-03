@@ -4,6 +4,41 @@ import researchChunks from "@/data/research-chunks.json";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+// Free-tier Groq limits tokens per day per model. If the primary model is
+// rate-limited (429), fall back to another model with its own quota.
+const CHAT_MODELS = [
+  "llama-3.3-70b-versatile",
+  "openai/gpt-oss-20b",
+  "llama-3.1-8b-instant",
+];
+
+async function createStream(
+  messages: { role: string; content: string }[]
+): Promise<AsyncIterable<Groq.Chat.Completions.ChatCompletionChunk>> {
+  let lastError: unknown = null;
+  for (const model of CHAT_MODELS) {
+    try {
+      return await groq.chat.completions.create({
+        model,
+        temperature: 0.7,
+        max_tokens: 2048,
+        stream: true,
+        messages,
+      });
+    } catch (err) {
+      lastError = err;
+      const msg = (err as Error)?.message ?? "";
+      const isRateLimit =
+        (err as { status?: number })?.status === 429 || /rate.?limit/i.test(msg);
+      const isBadModel =
+        (err as { status?: number })?.status === 404 && /does not exist/i.test(msg);
+      if (!isRateLimit && !isBadModel) throw err;
+      console.warn(`Groq failed on ${model}, trying fallback model...`);
+    }
+  }
+  throw lastError;
+}
+
 // RAG: Keyword-based search for relevant research chunks
 function searchResearchChunks(query: string, topK: number = 4): string {
   const queryLower = query.toLowerCase();
@@ -141,7 +176,12 @@ Topic handling:
 - Answer finance, money, budgeting, investing, tax, insurance, debt, retirement, and general personal finance questions thoroughly.
 - If the question is related to money or has a financial angle, answer it fully.
 - If the question is unrelated to finance, respond briefly and humbly: "I'm ArthaAI, a finance-focused assistant. I'd love to help you with budgeting, investing, taxes, or any money-related questions!"
-- Never pretend to be something you're not.`;
+- Never pretend to be something you're not.
+
+Stock queries:
+- When the user asks about a specific stock (by name or ticker, e.g. TCS, Reliance, AAPL), the app automatically displays a live price card and historical price chart alongside your reply.
+- Refer to the displayed chart naturally when relevant (e.g. "The chart above shows...") instead of describing numbers that may change.
+- Keep stock commentary educational: discuss trends, fundamentals, and risk briefly, and avoid price predictions.`;
 
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -172,7 +212,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { messages } = await request.json();
+    const { messages, stockNews, stockQuote } = await request.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -198,16 +238,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const stream = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
-      max_tokens: 2048,
-      stream: true,
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...trimmedMessages,
-      ],
-    });
+    // Latest stock news context (fetched at send time, so it is more recent
+    // than your training data)
+    if (Array.isArray(stockNews) && stockNews.length > 0) {
+      const headlines = stockNews
+        .slice(0, 3)
+        .map((h: string, i: number) => `${i + 1}. ${h}`)
+        .join("\n");
+      systemPrompt += `\n\n--- LATEST STOCK NEWS ---\nThe user asked about a stock, and these are its most recent news headlines (provided by Google News at the time of this conversation):\n${headlines}\n\nGuidelines:\n- Use these headlines to answer questions about recent results, earnings, and company news.\n- Treat them as recent and reliable enough to summarize, but attribute specifics to "recent news" and avoid fabricating numbers not stated in the headlines.\n- If the user asks for figures the headlines do not contain, say the news summary is limited and point them to the news card in the UI.\n--- END LATEST STOCK NEWS ---`;
+    }
+
+    // Live stock quote (fetched at send time from the exchange data feed,
+    // so ArthaAI can answer price questions instead of citing a training cutoff)
+    const quote = stockQuote as
+      | {
+          symbol?: string;
+          companyName?: string;
+          lastPrice?: number;
+          change?: number;
+          percentChange?: number;
+          previousClose?: number;
+          currency?: string;
+        }
+      | undefined;
+
+    if (quote?.lastPrice != null) {
+      const fmt = (n: number) =>
+        n.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+      const changeText =
+        quote.change != null
+          ? ` (${quote.change > 0 ? "+" : ""}${fmt(quote.change)} / ${quote.percentChange != null ? (quote.percentChange > 0 ? "+" : "") + fmt(quote.percentChange) + "%" : "—"} today)`
+          : "";
+      systemPrompt += `\n\n--- CURRENT STOCK QUOTE ---\nThe user asked about ${quote.companyName ?? quote.symbol ?? "a stock"} (${quote.symbol ?? "unknown"}). This is its live quote fetched at the time of this conversation:\n- Current price: ₹${fmt(quote.lastPrice)}${changeText}\n${quote.previousClose != null ? `- Previous close: ₹${fmt(quote.previousClose)}\n` : ""}\nGuidelines:\n- If the user asks for the current share price or today's change, answer directly with the numbers above. NEVER say you lack access to real-time data or current market prices when a quote is provided.\n- The live price card and chart shown to the user in the UI reflect the same data.\n- For details not present above (P/E ratio, market cap, etc.), say you don't have that specific figure.\n--- END CURRENT STOCK QUOTE ---`;
+    }
+
+    const stream = await createStream([
+      { role: "system", content: systemPrompt },
+      ...trimmedMessages,
+    ]);
 
     // Convert Groq stream to ReadableStream
     const encoder = new TextEncoder();

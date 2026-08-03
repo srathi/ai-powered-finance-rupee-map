@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart";
+const YAHOO_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 
-// Simple in-memory cache (30s TTL)
+// Simple in-memory cache (30s TTL, serve-stale up to 5 min on upstream failure)
 const cache = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 30_000;
+const STALE_TTL = 5 * 60_000;
 
 const SUPPORTED_RANGES = ["1d", "1mo", "3mo", "6mo", "1y", "5y", "max"] as const;
 type Range = (typeof SUPPORTED_RANGES)[number];
@@ -19,6 +20,43 @@ const RANGE_INTERVAL: Record<Range, string> = {
   "5y": "1wk",
   max: "1mo",
 };
+
+const YAHOO_HEADERS: Record<string, string> = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+};
+
+async function fetchYahooChart(
+  symbol: string,
+  interval: string,
+  range: string
+): Promise<{ ok: boolean; status: number; json?: unknown }> {
+  // Try alternate hosts with a short retry to ride out Yahoo throttling.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    for (let h = 0; h < YAHOO_HOSTS.length; h++) {
+      const base = YAHOO_HOSTS[h];
+      const url = `${base}/v8/finance/chart/${symbol}?interval=${interval}&range=${range}`;
+      try {
+        const res = await fetch(url, {
+          headers: YAHOO_HEADERS,
+          signal: AbortSignal.timeout(8_000),
+        });
+        if (res.ok) {
+          return { ok: true, status: res.status, json: await res.json() };
+        }
+        if (res.status === 404) {
+          // Likely a genuinely unknown ticker (or temporary throttling);
+          // don't keep hammering alternate hosts for a real 404.
+          return { ok: false, status: res.status };
+        }
+      } catch {
+        // network error / timeout — try next host
+      }
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return { ok: false, status: 502 };
+}
 
 interface YahooMeta {
   currency: string;
@@ -45,6 +83,12 @@ interface YahooQuote {
   low: (number | null)[];
   close: (number | null)[];
   volume: (number | null)[];
+}
+
+interface YahooChartResult {
+  meta: YahooMeta;
+  timestamp?: number[];
+  indicators?: { quote?: YahooQuote[] };
 }
 
 export async function GET(request: NextRequest) {
@@ -84,22 +128,24 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = `${YAHOO_BASE}/${symbol}?interval=${RANGE_INTERVAL[range]}&range=${range}`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-      },
-    });
+    const fetched = await fetchYahooChart(symbol, RANGE_INTERVAL[range], range);
 
-    if (!res.ok) {
+    if (!fetched.ok || !fetched.json) {
+      // Serve stale data when Yahoo is throttling/unreachable
+      if (cached && Date.now() - cached.ts < STALE_TTL) {
+        return NextResponse.json(cached.data);
+      }
       return NextResponse.json(
-        { error: `Yahoo Finance returned ${res.status}` },
+        {
+          error: fetched.status
+            ? `Yahoo Finance returned ${fetched.status}`
+            : "Yahoo Finance is unreachable. Please try again shortly.",
+        },
         { status: 502 }
       );
     }
 
-    const json = await res.json();
+    const json = fetched.json as { chart?: { result?: YahooChartResult[] } };
     const result = json?.chart?.result?.[0];
 
     if (!result) {
@@ -110,7 +156,7 @@ export async function GET(request: NextRequest) {
     }
 
     const meta: YahooMeta = result.meta;
-    const quote: YahooQuote = result.indicators?.quote?.[0];
+    const quote: YahooQuote | undefined = result.indicators?.quote?.[0];
 
     const lastPrice = meta.regularMarketPrice;
     const prevClose = meta.previousClose ?? meta.chartPreviousClose;

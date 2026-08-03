@@ -1,11 +1,14 @@
 "use client";
 
 import { Bot, User } from "lucide-react";
+import { StockSnapshot } from "@/components/stock-snapshot";
+import type { ResolvedStock } from "@/lib/stock-detection";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+  stock?: ResolvedStock | null;
 }
 
 function processInlineMarkdown(text: string): string {
@@ -119,11 +122,11 @@ function renderContent(text: string) {
   return blocks;
 }
 
-export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
+export function ChatMessage({ role, content, isStreaming, stock }: ChatMessageProps) {
   const isUser = role === "user";
 
-  return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+  const bubble = (
+    <>
       {/* Avatar */}
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -152,6 +155,26 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
           <span className="inline-block w-1.5 h-4 bg-primary/60 ml-0.5 animate-pulse rounded-sm align-middle" />
         )}
       </div>
+    </>
+  );
+
+  // Assistant replies about a stock show the live snapshot side by side
+  if (!isUser && stock) {
+    return (
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className={`flex gap-3 flex-1 min-w-0 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+          {bubble}
+        </div>
+        <div className="w-full lg:w-[50%] lg:max-w-md shrink-0">
+          <StockSnapshot symbol={stock.symbol} companyName={stock.companyName} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+      {bubble}
     </div>
   );
 }

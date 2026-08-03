@@ -15,10 +15,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { ChatMessage } from "@/components/chat-message";
+import { resolveStock, fetchStockNews, type ResolvedStock } from "@/lib/stock-detection";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  stock?: ResolvedStock | null;
 }
 
 const STORAGE_KEY = "arthaai-chat-history";
@@ -87,6 +89,8 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const sendIdRef = useRef(0);
+  const pendingStockRef = useRef<ResolvedStock | null>(null);
 
   // Load history on mount
   useEffect(() => {
@@ -122,6 +126,31 @@ export default function ChatPage() {
       setInput("");
       setIsStreaming(true);
 
+      // Detect a stock mention in the question and fetch its latest news so
+      // ArthaAI can discuss current results instead of hitting its cutoff.
+      // For non-stock questions this resolves immediately with no network calls.
+      const mySendId = ++sendIdRef.current;
+      pendingStockRef.current = null;
+      const resolved = await resolveStock(content);
+      if (sendIdRef.current !== mySendId) return;
+      pendingStockRef.current = resolved;
+      if (resolved) {
+        setMessages((prev) =>
+          prev.map((m, idx) =>
+            idx === prev.length - 1 && m.role === "assistant"
+              ? { ...m, stock: resolved }
+              : m
+          )
+        );
+      }
+      const stockNews = resolved ? await fetchStockNews(resolved) : [];
+
+      const assistantMessage = (contentStr: string): Message => ({
+        role: "assistant",
+        content: contentStr,
+        stock: pendingStockRef.current,
+      });
+
       // Build conversation for API
       const apiMessages = newMessages.map((m) => ({
         role: m.role,
@@ -133,7 +162,7 @@ export default function ChatPage() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: apiMessages }),
+          body: JSON.stringify({ messages: apiMessages, stockNews, stockQuote: resolved }),
           signal: abortRef.current.signal,
         });
 
@@ -146,7 +175,7 @@ export default function ChatPage() {
         let assistantContent = "";
 
         // Add empty assistant message
-        setMessages([...newMessages, { role: "assistant", content: "" }]);
+        setMessages([...newMessages, assistantMessage("")]);
 
         if (reader) {
           while (true) {
@@ -154,18 +183,12 @@ export default function ChatPage() {
             if (done) break;
             const chunk = decoder.decode(value, { stream: true });
             assistantContent += chunk;
-            setMessages([
-              ...newMessages,
-              { role: "assistant", content: assistantContent },
-            ]);
+            setMessages([...newMessages, assistantMessage(assistantContent)]);
           }
         }
 
         // Save final history
-        const finalMessages = [
-          ...newMessages,
-          { role: "assistant" as const, content: assistantContent },
-        ];
+        const finalMessages = [...newMessages, assistantMessage(assistantContent)];
         saveHistory(finalMessages);
       } catch (err: any) {
         if (err.name === "AbortError") return;
@@ -174,6 +197,7 @@ export default function ChatPage() {
           role: "assistant",
           content:
             "Sorry, I encountered an error. Please try again in a moment.",
+          stock: pendingStockRef.current,
         };
         setMessages([...newMessages, errorMessage]);
         saveHistory([...newMessages, errorMessage]);
@@ -275,6 +299,7 @@ export default function ChatPage() {
                 key={i}
                 role={msg.role}
                 content={msg.content}
+                stock={msg.stock}
                 isStreaming={isStreaming && i === messages.length - 1 && msg.role === "assistant"}
               />
             ))}
