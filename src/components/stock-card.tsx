@@ -4,6 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
+export interface StockHistoryPoint {
+  time: number;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number;
+  volume: number;
+}
+
 export interface StockData {
   symbol: string;
   companyName: string;
@@ -20,6 +29,8 @@ export interface StockData {
   volume: number;
   open: number;
   marketTime: number;
+  range?: string;
+  history?: StockHistoryPoint[];
 }
 
 function formatNumber(n: number): string {

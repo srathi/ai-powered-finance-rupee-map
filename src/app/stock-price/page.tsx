@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalculatorLayout } from "@/components/calculator-layout";
 import { StockCard, type StockData } from "@/components/stock-card";
+import { StockChart } from "@/components/stock-chart";
 import {
   Search,
   RotateCcw,
@@ -201,7 +202,7 @@ export default function StockPricePage() {
     <CalculatorLayout
       title="Live Stock Prices"
       description="Look up real-time NSE and BSE stock prices powered by Yahoo Finance."
-      info="Start typing a company name or stock symbol — suggestions appear as you type. Click a result to fetch live prices instantly."
+      info="Start typing a company name or stock symbol — suggestions appear as you type. Click a result to fetch live prices and a historical price chart instantly."
       inputs={
         <Card>
           <div className="p-6 space-y-4">
@@ -368,7 +369,15 @@ export default function StockPricePage() {
             </div>
           )}
 
-          {stockData && <StockCard data={stockData} />}
+          {stockData && (
+            <>
+              <StockCard data={stockData} />
+              <StockChart
+                symbol={stockData.symbol}
+                companyName={stockData.companyName}
+              />
+            </>
+          )}
 
           {!stockData && !error && !loading && (
             <Card className="flex items-center justify-center h-64">
