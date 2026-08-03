@@ -261,7 +261,7 @@ export default function HomePage() {
               <span className="text-lg">📚</span>
               <span className="text-sm font-medium text-primary">Learn Finance</span>
               <span className="text-xs text-primary/60 group-hover:text-primary/80 transition-colors">
-                15 lessons for kids →
+                →
               </span>
             </Link>
           </motion.div>
