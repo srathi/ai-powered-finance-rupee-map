@@ -141,9 +141,11 @@ function isExactTicker(candidate: string, result: SearchResult): boolean {
 }
 
 function isNameMatch(candidate: string, result: SearchResult): boolean {
-  const c = candidate.toLowerCase();
+  // Whitespace/punctuation-insensitive comparison so "Larsen Toubro" matches
+  // "Larsen & Toubro Limited" and "HDFC Bank" matches "HDFC Bank Limited".
+  const c = candidate.toLowerCase().replace(/[^a-z0-9]/g, "");
   const sym = result.symbol.toLowerCase();
-  const name = result.companyName.toLowerCase();
+  const name = result.companyName.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   // Company name starts with candidate (Reliance -> "Reliance Infrastructure Limited")
   if (name.startsWith(c) && c.length >= 3) {
@@ -173,6 +175,10 @@ async function probeQuote(symbol: string): Promise<ResolvedStock | null> {
       currency?: string;
     };
     if (!data.symbol || data.error) return null;
+    // A symbol with no market price is unusable for price answers — treat as
+    // unresolved so the next probe / search fallback gets a chance (e.g. the
+    // throttled SBI.NS stub that carries no quote while SBIN.NS has one).
+    if (typeof data.lastPrice !== "number") return null;
     return {
       symbol: data.symbol,
       companyName: data.companyName || symbol,
@@ -201,12 +207,25 @@ export async function resolveStock(text: string): Promise<ResolvedStock | null> 
 
     // 1) Direct ticker probe — exact symbols beat fuzzy name matching
     //    (e.g. "Reliance" -> RELIANCE.NS, not RELINFRA.NS)
+    // Multi-word phrases also try the concatenated ticker ("HDFC Bank" ->
+    // HDFCBANK) and progressively shorter leading prefixes ("Redington India
+    // Ltd" -> "Redington") so suffix words don't block a resolvable name.
+    // Single-word prefixes are only tried for 3-word phrases where the leading
+    // word is the meaningful one; for 2-word phrases they risk hitting an
+    // unrelated ticker ("Tech" -> TECH.NS instead of Tech Mahindra).
     const probes = [candidate];
-    // Multi-word phrases also try the concatenated ticker ("HDFC Bank" -> HDFCBANK)
     if (candidate.includes(" ")) {
       probes.push(candidate.replace(/\s+/g, ""));
+      const parts = candidate.split(" ");
+      // 2 words: keep the whole phrase only. 3 words: allow the leading word.
+      // 4+ words: keep at least 2 leading words (never just "State" of SBI).
+      const minWords = parts.length === 3 ? 1 : 2;
+      for (let n = parts.length - 1; n >= minWords; n--) {
+        const prefix = parts.slice(0, n).join(" ");
+        probes.push(prefix, prefix.replace(/\s+/g, ""));
+      }
     }
-    for (const probeSymbol of probes) {
+    for (const probeSymbol of [...new Set(probes)]) {
       const found = await probeQuote(probeSymbol);
       if (found) return found;
     }
@@ -217,14 +236,36 @@ export async function resolveStock(text: string): Promise<ResolvedStock | null> 
       if (!res.ok) continue;
       const data = (await res.json()) as { results?: SearchResult[] };
       const indian = (data.results ?? []).filter((r) => r.isIndian);
-      const match =
-        indian.find((r) => isExactTicker(candidate, r)) ??
-        indian.find((r) => isNameMatch(candidate, r));
+
+      // Rank matches: prefer exact ticker, a symbol that starts with the
+      // concatenated candidate ("Tata Motors" -> TATAMOTORS, not TMCV), a name
+      // match, and the NSE listing over BSE when equal ("Adani Enterprises").
+      const concatCand = candidate.toLowerCase().replace(/\s+/g, "");
+      const scored = indian
+        .map((r) => {
+          const fs = r.fullSymbol.toLowerCase();
+          let s = 0;
+          if (isExactTicker(candidate, r)) s += 100;
+          else if (fs === `${concatCand}.ns` || fs === `${concatCand}.bo`) s += 80;
+          else if (concatCand.length >= 3 && fs.startsWith(concatCand)) s += 40;
+          if (isNameMatch(candidate, r)) s += 20;
+          if (fs.endsWith(".ns")) s += 5;
+          return { r, s };
+        })
+        .filter((x) => x.s > 0)
+        .sort((a, b) => b.s - a.s);
+
+      const match = scored[0]?.r;
       if (match) {
-        return {
-          symbol: match.fullSymbol,
-          companyName: match.companyName || match.symbol,
-        };
+        // Search may match the right company but not return a live quote;
+        // probe the resolved symbol so price questions can still be answered.
+        const quoted = await probeQuote(match.fullSymbol);
+        return (
+          quoted ?? {
+            symbol: match.fullSymbol,
+            companyName: match.companyName || match.symbol,
+          }
+        );
       }
     } catch {
       // Ignore individual lookup failures
