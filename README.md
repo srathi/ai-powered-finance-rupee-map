@@ -18,7 +18,7 @@ RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuri
 | Animation | Framer Motion |
 | Charts | Recharts |
 | State | Zustand |
-| AI | Groq SDK (Llama 3.3 70B) |
+| AI | Groq SDK (Llama 3.3 70B + GPT-OSS-20B + Llama 3.1 8B fallback) |
 | PDF Parsing | unpdf |
 | Forms | React Hook Form + Zod |
 | Export | jsPDF, xlsx |
@@ -41,7 +41,8 @@ AIFinanceRupeeMap/
 │   │   │   ├── mutual-fund-search/route.ts # MFAPI search proxy
 │   │   │   ├── mutual-fund-data/route.ts   # MFAPI NAV data proxy
 │   │   │   ├── stock-price/route.ts      # Yahoo Finance price proxy
-│   │   │   └── stock-search/route.ts     # Yahoo Finance search proxy
+│   │   │   ├── stock-search/route.ts     # Yahoo Finance search proxy
+│   │   │   └── stock-news/route.ts       # Google News RSS proxy
 │   │   ├── learn/                        # Financial literacy section
 │   │   │   ├── [course]/[lesson]/        # Kids lessons with quizzes
 │   │   │   └── general/[topic]/          # General finance articles
@@ -71,7 +72,10 @@ AIFinanceRupeeMap/
 │   │   ├── quiz-card.tsx                 # Quiz component
 │   │   ├── lesson-layout.tsx             # Lesson page wrapper
 │   │   ├── chat-message.tsx              # Chat bubble with markdown
-│   │   ├── portfolio-form.tsx            # Portfolio entry form
+│   │   ├── stock-snapshot.tsx             # Chat stock card + chart + news
+│   │   ├── stock-chart.tsx                # Historical price chart (1D-5Y-Max)
+│   │   ├── stock-card.tsx                 # Live quote card in chat
+│   │   ├── portfolio-form.tsx             # Portfolio entry form
 │   │   ├── portfolio-analysis.tsx        # Portfolio results display
 │   │   └── fund-compare-card.tsx         # Fund comparison card
 │   ├── types/
@@ -92,6 +96,7 @@ AIFinanceRupeeMap/
 │   │   │   └── insurance.ts             # Insurance needs
 │   │   ├── learn-data.ts                 # Kids course content
 │   │   ├── general-learn-data.ts         # General articles
+│   │   ├── stock-detection.ts            # Stock mention detection & resolution
 │   │   └── utils.ts                      # Utility functions
 │   └── data/
 │       ├── historical-returns.ts         # 564 monthly records (1979-2025)
@@ -352,12 +357,25 @@ graph TB
 - **General**: Inflation, Purchasing Power, Rule of 72, Compound/Simple Interest, Future/Present Value
 
 ### ArthaAI Chatbot
-- Streaming responses via Groq SDK (Llama 3.3 70B)
+- Streaming responses via Groq SDK (Llama 3.3 70B, auto-fallback to GPT-OSS-20B → Llama 3.1 8B on rate limits/404s)
 - RAG-powered with 51 research paper chunks
+- **Stock mention detection** (NSE/BSE): "what's the share price of TCS?" or "when is the next TCS results?" resolve the ticker via Yahoo Finance probe/search and show a live quote card, historical chart, and latest news right in the chat
+- Live stock quote + latest headlines injected into the model context so answers never claim "no access to real-time data"
+- Brand alias map (Policybazaar, Paytm, Nykaa, ...) for common Indian company names
 - Indian financial context (₹, PPF, NPS, ELSS, Nifty 50, SEBI)
 - Rate limiting (15 requests/minute)
 - Chat history persistence (localStorage)
 - Markdown rendering with tables, lists, code blocks
+
+### Stock Price Lookup
+- NSE/BSE live quotes via Yahoo Finance proxy (host failover + serve-stale caching)
+- Historical price chart with range tabs (1D, 1M, 3M, 6M, 1Y, 5Y, Max)
+- Latest news headlines from Google News RSS (5-minute cache)
+
+### Withdrawal Rates (SWR)
+- User-defined retirement corpus input (default ₹1 Cr, ₹0.5L–₹10 Cr range)
+- Annual and monthly withdrawal amounts in ₹ alongside the SWR %
+- 200-path Monte Carlo robustness check with shared-axis simulation chart, initial-corpus reference line, and survived/depleted path legend
 
 ### AI Portfolio Review
 - Groq-powered portfolio analysis with personalized recommendations
@@ -425,6 +443,7 @@ npm start
 | `/api/portfolio-review` | POST | AI portfolio analysis (Groq SDK) |
 | `/api/stock-price` | GET | Yahoo Finance price proxy |
 | `/api/stock-search` | GET | Yahoo Finance search proxy |
+| `/api/stock-news` | GET | Latest news headlines proxy |
 
 ## Data Sources
 

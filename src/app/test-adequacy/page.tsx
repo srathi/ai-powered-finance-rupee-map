@@ -60,6 +60,23 @@ export default function TestAdequacyPage() {
     }));
   }, [result]);
 
+  // One shared table (Yr 0..N × one column per simulated path) so Recharts
+  // renders every line on the same axis with sequential ticks.
+  const simulationChartData = useMemo(() => {
+    if (!simulationPaths.length) return [];
+    const years = Math.max(...simulationPaths.map((p) => p.data.length));
+    const rows: Record<string, string | number | null>[] = [];
+    for (let y = 0; y < years; y++) {
+      const name = `Yr ${y}`;
+      const row: Record<string, string | number | null> = { name };
+      simulationPaths.forEach((path, idx) => {
+        row[`p${idx}`] = path.data[y]?.value ?? null;
+      });
+      rows.push(row);
+    }
+    return rows;
+  }, [simulationPaths]);
+
   const handleReset = () => {
     setInputs({
       annualExpenditure: 1200000,
@@ -262,14 +279,19 @@ export default function TestAdequacyPage() {
               <CardContent>
                 <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <LineChart data={simulationChartData}>
                       <CartesianGrid
                         strokeDasharray="3 3"
                         className="opacity-30"
                       />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 12 }}
+                        minTickGap={24}
+                      />
                       <YAxis
                         tick={{ fontSize: 12 }}
+                        domain={[0, "auto"]}
                         tickFormatter={(v) =>
                           v >= 1e7
                             ? `${(v / 1e7).toFixed(1)}Cr`
@@ -285,12 +307,12 @@ export default function TestAdequacyPage() {
                         <Line
                           key={path.id}
                           type="monotone"
-                          data={path.data}
-                          dataKey="value"
+                          dataKey={`p${path.id}`}
                           stroke={path.success ? "#10b981" : "#ef4444"}
                           strokeWidth={0.8}
                           dot={false}
                           opacity={0.35}
+                          isAnimationActive={false}
                         />
                       ))}
                     </LineChart>

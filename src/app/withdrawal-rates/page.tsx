@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalculatorLayout } from "@/components/calculator-layout";
 import { SummaryCard, SummaryGrid } from "@/components/summary-cards";
-import { SliderField } from "@/components/input-controls";
+import { SliderField, InputField } from "@/components/input-controls";
 import { formatPercent, formatCurrency } from "@/lib/format";
 import { computeSWRFormula } from "@/lib/calculations/stochastic";
 import { historicalReturns } from "@/data/historical-returns";
@@ -17,6 +17,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { RotateCcw, Play } from "lucide-react";
 
@@ -28,11 +29,15 @@ interface RobustnessResult {
 export default function WithdrawalRatesPage() {
   const [equityAllocation, setEquityAllocation] = useState(50);
   const [retirementPeriodYears, setRetirementPeriodYears] = useState(30);
+  const [corpus, setCorpus] = useState(10000000);
 
   const swr = useMemo(
     () => computeSWRFormula(equityAllocation, retirementPeriodYears),
     [equityAllocation, retirementPeriodYears]
   );
+
+  const annualWithdrawal = (swr / 100) * corpus;
+  const monthlyWithdrawal = annualWithdrawal / 12;
 
   const [robustness, setRobustness] = useState<RobustnessResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -40,7 +45,6 @@ export default function WithdrawalRatesPage() {
   const handleRobustness = useCallback(() => {
     setIsCalculating(true);
     setTimeout(() => {
-      const corpus = 10000000; // ₹1 Cr reference corpus
       const monthlyWithdrawal = (swr / 100) * corpus / 12;
       const months = retirementPeriodYears * 12;
       const equityPct = equityAllocation / 100;
@@ -78,9 +82,9 @@ export default function WithdrawalRatesPage() {
           if (c <= 0) {
             c = 0;
             failed = true;
-            if (m % 12 === 0) {
-              path.push({ name: `Yr ${Math.floor(m / 12) + 1}`, value: 0 });
-            }
+            // Record the depletion year so the path visibly drops to zero
+            // (also makes the green/red coloring accurate for the chart).
+            path.push({ name: `Yr ${Math.floor(m / 12) + 1}`, value: 0 });
             break;
           }
           const eg = c * equityPct * (data.equityReturn / 100 / 12);
@@ -101,7 +105,7 @@ export default function WithdrawalRatesPage() {
       });
       setIsCalculating(false);
     }, 50);
-  }, [swr, equityAllocation, retirementPeriodYears]);
+  }, [swr, corpus, equityAllocation, retirementPeriodYears]);
 
   const swrChartData = useMemo(() => {
     const data = [];
@@ -117,6 +121,24 @@ export default function WithdrawalRatesPage() {
     return data;
   }, []);
 
+  // One shared table (Yr 0..N × one column per simulated path) so Recharts
+  // renders every line on the same axis. Depleted paths stop at the year
+  // they hit zero (null for later years) instead of drawing a fake tail.
+  const simulationChartData = useMemo(() => {
+    if (!robustness) return [];
+    const rows: Record<string, string | number | null>[] = [];
+    const totalYears = retirementPeriodYears;
+    for (let y = 0; y <= totalYears; y++) {
+      const name = y === 0 ? "Start" : `Yr ${y}`;
+      const row: Record<string, string | number | null> = { name };
+      robustness.simulationPaths.forEach((path, idx) => {
+        row[`p${idx}`] = path.find((pt) => pt.name === name)?.value ?? null;
+      });
+      rows.push(row);
+    }
+    return rows;
+  }, [robustness, retirementPeriodYears]);
+
   return (
     <CalculatorLayout
       title="Withdrawal Rates"
@@ -129,6 +151,16 @@ export default function WithdrawalRatesPage() {
             <CardTitle className="text-lg">Inputs</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
+            <InputField
+              label="Retirement Corpus"
+              value={corpus}
+              onChange={setCorpus}
+              min={100000}
+              max={1000000000}
+              step={500000}
+              prefix="₹"
+            />
+
             <SliderField
               label="Equity Allocation"
               value={equityAllocation}
@@ -175,6 +207,17 @@ export default function WithdrawalRatesPage() {
               success probability over {retirementPeriodYears} years at{" "}
               {equityAllocation}% equity.
             </p>
+            <div className="grid grid-cols-2 gap-4 mt-6 max-w-md mx-auto">
+              <SummaryCard
+                label="Annual Withdrawal"
+                value={formatCurrency(Math.round(annualWithdrawal))}
+                variant="success"
+              />
+              <SummaryCard
+                label="Monthly Withdrawal"
+                value={formatCurrency(Math.round(monthlyWithdrawal))}
+              />
+            </div>
           </div>
 
           <Card>
@@ -259,19 +302,41 @@ export default function WithdrawalRatesPage() {
                     variant={
                       robustness.passRate >= 90 ? "success" : "warning"
                     }
-                    sublabel="Based on 200 simulations with ₹1 Cr reference corpus"
+                    sublabel={`Based on 200 simulations with ${formatCurrency(corpus)} corpus`}
                   />
+                </div>
+                <div className="flex items-center justify-center gap-5 mb-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-0.5 rounded bg-emerald-500" />
+                    Corpus survived
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-0.5 rounded bg-rose-500" />
+                    Corpus depleted
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-0.5 rounded border-t-2 border-dashed border-amber-500" />
+                    Initial corpus
+                  </span>
                 </div>
                 <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <LineChart
+                      data={simulationChartData}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
                       <CartesianGrid
                         strokeDasharray="3 3"
                         className="opacity-30"
                       />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 11 }}
+                        minTickGap={24}
+                      />
                       <YAxis
                         tick={{ fontSize: 12 }}
+                        domain={[0, "auto"]}
                         tickFormatter={(v) =>
                           v >= 1e7
                             ? `${(v / 1e7).toFixed(1)}Cr`
@@ -283,20 +348,27 @@ export default function WithdrawalRatesPage() {
                       <Tooltip
                         formatter={(value) => formatCurrency(Number(value))}
                       />
+                      <ReferenceLine
+                        y={corpus}
+                        stroke="#f59e0b"
+                        strokeDasharray="4 4"
+                        strokeOpacity={0.6}
+                      />
                       {robustness.simulationPaths.map((path, idx) => (
                         <Line
                           key={idx}
                           type="monotone"
-                          data={path}
-                          dataKey="value"
+                          dataKey={`p${idx}`}
+                          connectNulls={false}
+                          dot={false}
                           stroke={
                             path[path.length - 1].value > 0
                               ? "#10b981"
                               : "#ef4444"
                           }
-                          strokeWidth={0.8}
-                          dot={false}
-                          opacity={0.4}
+                          strokeWidth={1}
+                          opacity={0.5}
+                          isAnimationActive={false}
                         />
                       ))}
                     </LineChart>

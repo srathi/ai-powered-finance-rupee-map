@@ -61,16 +61,30 @@ export default function StochasticPage() {
 
   const simulationPaths = useMemo(() => {
     if (!result) return [];
-    return result.simulations.slice(0, 50).map((sim, idx) => ({
+    return result.simulations.slice(0, 20).map((sim, idx) => ({
       id: idx,
       data: sim.corpusPath
         .filter((_, i) => i % 12 === 0 || i === 0)
-        .map((val, i) => ({
-          name: `Yr ${i}`,
-          value: val,
-        })),
+        .map((val, i) => ({ name: `Yr ${i}`, value: val })),
     }));
   }, [result]);
+
+  // One shared table (Yr 0..N × one column per simulated path) so Recharts
+  // renders every line on the same axis with sequential ticks.
+  const simulationChartData = useMemo(() => {
+    if (!simulationPaths.length) return [];
+    const years = Math.max(...simulationPaths.map((p) => p.data.length));
+    const rows: Record<string, string | number | null>[] = [];
+    for (let y = 0; y < years; y++) {
+      const name = `Yr ${y}`;
+      const row: Record<string, string | number | null> = { name };
+      simulationPaths.forEach((path, idx) => {
+        row[`p${idx}`] = path.data[y]?.value ?? null;
+      });
+      rows.push(row);
+    }
+    return rows;
+  }, [simulationPaths]);
 
   const handleReset = () => {
     setInputs({
@@ -323,14 +337,19 @@ export default function StochasticPage() {
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <LineChart data={simulationChartData}>
                       <CartesianGrid
                         strokeDasharray="3 3"
                         className="opacity-30"
                       />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 12 }}
+                        minTickGap={24}
+                      />
                       <YAxis
                         tick={{ fontSize: 12 }}
+                        domain={[0, "auto"]}
                         tickFormatter={(v) =>
                           v >= 1e7
                             ? `${(v / 1e7).toFixed(1)}Cr`
@@ -342,16 +361,16 @@ export default function StochasticPage() {
                       <Tooltip
                         formatter={(value) => formatCurrency(Number(value))}
                       />
-                      {simulationPaths.slice(0, 20).map((path) => (
+                      {simulationPaths.map((path) => (
                         <Line
                           key={path.id}
                           type="monotone"
-                          data={path.data}
-                          dataKey="value"
+                          dataKey={`p${path.id}`}
                           stroke={`hsl(${path.id * 18}, 60%, 50%)`}
                           strokeWidth={0.5}
                           dot={false}
                           opacity={0.4}
+                          isAnimationActive={false}
                         />
                       ))}
                     </LineChart>
