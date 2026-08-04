@@ -20,7 +20,7 @@ export function Footer() {
           </p>
           <div className="flex gap-4">
             <a
-              href="https://github.com"
+              href="https://github.com/srathi/ai-powered-finance-rupee-map"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full glass-effect flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"
@@ -78,7 +78,7 @@ export function Footer() {
             </li>
             <li>
               <a
-                href="https://github.com"
+                href="https://github.com/srathi/ai-powered-finance-rupee-map"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
