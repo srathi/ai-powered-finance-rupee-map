@@ -67,9 +67,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                 onClick={onExportCSV}
                 title="Export CSV"
                 aria-label="Export CSV"
-                className="p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
+                className="flex flex-col items-center gap-0.5 p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
               >
                 <FileText className="h-4 w-4" />
+                <span className="text-[10px] text-on-surface-variant">CSV</span>
               </button>
             )}
             {onExportExcel && (
@@ -77,9 +78,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                 onClick={onExportExcel}
                 title="Export Excel"
                 aria-label="Export Excel"
-                className="p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
+                className="flex flex-col items-center gap-0.5 p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
               >
                 <FileSpreadsheet className="h-4 w-4" />
+                <span className="text-[10px] text-on-surface-variant">XLS</span>
               </button>
             )}
           </div>
