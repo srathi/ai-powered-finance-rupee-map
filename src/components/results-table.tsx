@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, FileSpreadsheet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Column<T> {
@@ -65,17 +65,21 @@ export function ResultsTable<T extends Record<string, unknown>>({
             {onExportCSV && (
               <button
                 onClick={onExportCSV}
+                title="Export CSV"
+                aria-label="Export CSV"
                 className="p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
               >
-                <Download className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
               </button>
             )}
             {onExportExcel && (
               <button
                 onClick={onExportExcel}
+                title="Export Excel"
+                aria-label="Export Excel"
                 className="p-2 hover:bg-surface-hover rounded-lg transition-colors text-outline"
               >
-                <Download className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
               </button>
             )}
           </div>
