@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -165,6 +166,7 @@ const stats = [
 ];
 
 export default function HomePage() {
+  const [comingSoon, setComingSoon] = useState(false);
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -596,17 +598,22 @@ export default function HomePage() {
                   research-grade — not investment advice.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/stock-forecast">
-                    <Button size="lg" className="gap-2 btn-primary-gradient">
-                      Forecast a Stock
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/watchlist-forecast">
-                    <Button size="lg" variant="outline" className="gap-2">
-                      Scan Watchlist
-                    </Button>
-                  </Link>
+                  <Button
+                    size="lg"
+                    className="gap-2 btn-primary-gradient"
+                    onClick={() => setComingSoon(true)}
+                  >
+                    Forecast a Stock
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => setComingSoon(true)}
+                  >
+                    Scan Watchlist
+                  </Button>
                 </div>
               </div>
               <div className="hidden md:block w-72 shrink-0">
@@ -657,6 +664,28 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {comingSoon && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setComingSoon(false)}
+        >
+          <div
+            className="glass-effect rounded-2xl border border-warning/30 p-8 max-w-sm text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-3">🧪</div>
+            <h3 className="text-xl font-bold text-on-surface mb-2">
+              Coming Soon — In Beta
+            </h3>
+            <p className="text-sm text-on-surface-variant mb-6">
+              AI Stock Forecast and Watchlist Scanner are in beta. We&apos;re
+              finalizing the Kronos-powered experience and will roll it out soon.
+            </p>
+            <Button onClick={() => setComingSoon(false)}>Got it</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
