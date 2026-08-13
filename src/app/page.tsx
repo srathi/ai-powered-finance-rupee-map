@@ -167,6 +167,7 @@ const stats = [
 
 export default function HomePage() {
   const [comingSoon, setComingSoon] = useState(false);
+  const isDev = process.env.NODE_ENV === "development";
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -598,22 +599,39 @@ export default function HomePage() {
                   research-grade — not investment advice.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    size="lg"
-                    className="gap-2 btn-primary-gradient"
-                    onClick={() => setComingSoon(true)}
-                  >
-                    Forecast a Stock
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => setComingSoon(true)}
-                  >
-                    Scan Watchlist
-                  </Button>
+                  {isDev ? (
+                    <Link href="/stock-forecast">
+                      <Button size="lg" className="gap-2 btn-primary-gradient">
+                        Forecast a Stock
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      size="lg"
+                      className="gap-2 btn-primary-gradient"
+                      onClick={() => setComingSoon(true)}
+                    >
+                      Forecast a Stock
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {isDev ? (
+                    <Link href="/watchlist-forecast">
+                      <Button size="lg" variant="outline" className="gap-2">
+                        Scan Watchlist
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => setComingSoon(true)}
+                    >
+                      Scan Watchlist
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="hidden md:block w-72 shrink-0">
