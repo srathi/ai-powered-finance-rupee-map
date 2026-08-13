@@ -17,6 +17,7 @@ import {
   Clock,
   BadgeCheck,
   LayoutGrid,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -115,6 +116,18 @@ const categories = [
     color: "tertiary",
     cta: "PROTECT",
   },
+  {
+    name: "Markets & AI Forecast",
+    icon: LineChart,
+    materialIcon: "candlestick_chart",
+    description: "Probabilistic NSE/BSE price forecasts powered by Kronos — an open-source financial foundation model pre-trained on 12B+ candles across 45 exchanges.",
+    calculators: [
+      { title: "AI Stock Forecast", href: "/stock-forecast" },
+      { title: "Watchlist Scanner", href: "/watchlist-forecast" },
+    ],
+    color: "primary",
+    cta: "FORECAST",
+  },
 ];
 
 const features = [
@@ -135,6 +148,12 @@ const features = [
     title: "Evidence-Based Planning",
     description: "No gut feelings. Just math. Our logic is fully transparent and based on established financial research.",
     color: "info",
+  },
+  {
+    icon: LineChart,
+    title: "AI Price Forecasting",
+    description: "Go beyond historical charts — our Kronos-powered engine samples thousands of Monte Carlo paths to project NSE/BSE prices with a confidence band and upside probability.",
+    color: "primary",
   },
 ];
 
@@ -530,6 +549,78 @@ export default function HomePage() {
                       className="px-4 py-2.5 rounded-xl bg-surface-container-high/50 border border-border/30 text-sm text-muted-foreground"
                     >
                       📈 &quot;{q}&quot;
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Markets / Kronos Section */}
+      <section className="px-6 py-16">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent border border-primary/10 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                    <span className="text-2xl">🔮</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                      <span className="text-primary">AI</span>{" "}
+                      <span className="text-on-surface">Stock</span>{" "}
+                      <span className="text-secondary">Forecast</span>
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Powered by Kronos — a financial foundation model
+                    </p>
+                    <span className="inline-block mt-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/30">
+                      🧪 In Beta · Coming Soon
+                    </span>
+                  </div>
+                </div>
+                <p className="text-on-surface-variant mb-4 max-w-lg">
+                  <span className="font-semibold text-on-surface">Kronos</span> is
+                  an open-source foundation model for financial K-lines,
+                  pre-trained on 12B+ candles from 45 global exchanges (AAAI 2026).
+                  RupeeMap fine-tunes its Indian-market layer to forecast NSE/BSE
+                  prices.
+                </p>
+                <p className="text-on-surface-variant mb-6 max-w-lg">
+                  Ask for a single-stock forecast with a 90% confidence band and
+                  upside probability, or scan a whole watchlist to rank it by
+                  projected return. Forecasts are probabilistic and
+                  research-grade — not investment advice.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href="/stock-forecast">
+                    <Button size="lg" className="gap-2 btn-primary-gradient">
+                      Forecast a Stock
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/watchlist-forecast">
+                    <Button size="lg" variant="outline" className="gap-2">
+                      Scan Watchlist
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="hidden md:block w-72 shrink-0">
+                <div className="space-y-3">
+                  {[
+                    "Where is TCS headed next quarter?",
+                    "Forecast Reliance with 90% band",
+                    "Rank my watchlist by upside",
+                  ].map((q, i) => (
+                    <div
+                      key={i}
+                      className="px-4 py-2.5 rounded-xl bg-surface-container-high/50 border border-border/30 text-sm text-muted-foreground"
+                    >
+                      🔮 &quot;{q}&quot;
                     </div>
                   ))}
                 </div>
