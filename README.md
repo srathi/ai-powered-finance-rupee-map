@@ -4,7 +4,7 @@ A production-ready financial calculator web application with 58+ calculators, AI
 
 ## Overview
 
-RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuring retirement planning calculators, investment tools, loan calculators, tax planning, insurance analysis, AI-powered portfolio review, and a RAG-powered AI chatbot (ArthaAI) for financial guidance with Indian market context.
+RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuring retirement planning calculators, investment tools, loan calculators, tax planning, insurance analysis, AI-powered portfolio review, a RAG-powered AI chatbot (ArthaAI), and **AI stock forecasting powered by Kronos** — an open-source financial foundation model — for financial guidance with Indian market context.
 
 ## Tech Stack
 
@@ -19,6 +19,7 @@ RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuri
 | Charts | Recharts |
 | State | Zustand |
 | AI | Groq SDK (Llama 3.3 70B + GPT-OSS-20B + Llama 3.1 8B fallback) |
+| AI Forecasting | Kronos financial foundation model (Python sidecar service) |
 | PDF Parsing | unpdf |
 | Forms | React Hook Form + Zod |
 | Export | jsPDF, xlsx |
@@ -33,6 +34,7 @@ AIFinanceRupeeMap/
 │       └── ssrn-5381648-dynamic.pdf      # Research paper for RAG
 ├── scripts/
 │   └── parse-pdf.js                      # PDF → JSON chunks parser
+├── kronos-service/                       # Python sidecar: Kronos forecasting API
 ├── src/
 │   ├── app/                              # Next.js App Router pages
 │   │   ├── api/                          # API routes
@@ -43,6 +45,8 @@ AIFinanceRupeeMap/
 │   │   │   ├── stock-price/route.ts      # Yahoo Finance price proxy
 │   │   │   ├── stock-search/route.ts     # Yahoo Finance search proxy
 │   │   │   └── stock-news/route.ts       # Google News RSS proxy
+│   │   │   ├── stock-forecast/route.ts   # Kronos AI price forecast proxy
+│   │   │   └── stock-scan/route.ts       # Kronos watchlist scanner proxy
 │   │   ├── learn/                        # Financial literacy section
 │   │   │   ├── [course]/[lesson]/        # Kids lessons with quizzes
 │   │   │   └── general/[topic]/          # General finance articles
@@ -58,6 +62,8 @@ AIFinanceRupeeMap/
 │   │   ├── sip-calculator/               # Investment calculators
 │   │   ├── lumpsum-calculator/
 │   │   ├── stock-price/
+│   │   ├── stock-forecast/               # Kronos AI price forecast page
+│   │   ├── watchlist-forecast/           # Kronos watchlist scanner page
 │   │   ├── ...                           # 58+ calculator pages
 │   │   └── page.tsx                      # Landing page
 │   ├── components/
@@ -372,6 +378,13 @@ graph TB
 - Historical price chart with range tabs (1D, 1M, 3M, 6M, 1Y, 5Y, Max)
 - Latest news headlines from Google News RSS (5-minute cache)
 
+### AI Stock Forecast (Kronos)
+- Powered by **Kronos**, an open-source foundation model for financial K-lines pre-trained on 12B+ candles from 45 global exchanges (AAAI 2026)
+- Single-ticker probabilistic forecast: 90% confidence band, median/expected prices, upside probability, risk score, and a fan/sampled-paths chart
+- Watchlist scanner: batch-forecasts a list of tickers and ranks them by projected upside
+- Served by a Python sidecar (`kronos-service/`) proxied through `/api/stock-forecast` and `/api/stock-scan`; falls back to a cached model or trend heuristic if the model is unavailable
+- Forecasts are research-grade and probabilistic — not investment advice
+
 ### Withdrawal Rates (SWR)
 - User-defined retirement corpus input (default ₹1 Cr, ₹0.5L–₹10 Cr range)
 - Annual and monthly withdrawal amounts in ₹ alongside the SWR %
@@ -483,4 +496,4 @@ See [SESSION_STATE.md](./SESSION_STATE.md) for detailed development state and hi
 
 ## License
 
-Private - All rights reserved.
+MIT — see the [LICENSE](./LICENSE) file.
