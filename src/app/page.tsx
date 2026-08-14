@@ -317,7 +317,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative px-6 py-32 bg-surface-container-low overflow-hidden">
+      <section className="relative px-6 py-16 bg-surface-container-low overflow-hidden">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-12">
@@ -385,7 +385,7 @@ export default function HomePage() {
       </section>
 
       {/* ArthaAI Section */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-8">
         <div className="max-w-[1440px] mx-auto">
           <div className="rounded-2xl bg-gradient-to-br from-cyan-500/10 via-emerald-500/5 to-transparent border border-cyan-500/10 p-8 md:p-12">
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -439,7 +439,7 @@ export default function HomePage() {
       </section>
 
       {/* Portfolio Review Section */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-8">
         <div className="max-w-[1440px] mx-auto">
           <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 via-primary/5 to-transparent border border-emerald-500/10 p-8 md:p-12">
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -500,7 +500,7 @@ export default function HomePage() {
       </section>
 
       {/* Markets / Kronos Section */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-8">
         <div className="max-w-[1440px] mx-auto">
           <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent border border-primary/10 p-8 md:p-12">
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -594,7 +594,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20">
+      <section className="px-6 py-12">
         <div className="max-w-[1440px] mx-auto">
           <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-8 md:p-12 text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-on-surface">
@@ -622,7 +622,7 @@ export default function HomePage() {
       </section>
 
       {/* Categories Grid */}
-      <section id="categories" className="px-6 py-24 max-w-[1440px] mx-auto w-full">
+      <section id="categories" className="px-6 py-16 max-w-[1440px] mx-auto w-full">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div className="max-w-xl">
             <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4">
