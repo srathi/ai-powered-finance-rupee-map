@@ -316,68 +316,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Grid */}
-      <section id="categories" className="px-6 py-24 max-w-[1440px] mx-auto w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-          <div className="max-w-xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4">
-              A complete ecosystem for your financial journey.
-            </h2>
-            <p className="text-on-surface-variant">
-              Every tool is built on verified historical data and peer-reviewed financial models.
-            </p>
-          </div>
-          <a href="#categories" className="font-data text-sm text-primary flex items-center gap-2 hover:text-primary/80 transition-colors">
-            Explore All Modules
-            <LayoutGrid className="h-4 w-4" />
-          </a>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
-            >
-              <Link href={cat.calculators[0].href}>
-                <div className={`glass-effect p-8 rounded-2xl group hover:border-${cat.color}/40 transition-all cursor-pointer relative overflow-hidden h-full`}>
-                  {/* Background Icon */}
-                  <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <cat.icon className="w-32 h-32" />
-                  </div>
-
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-12">
-                    <div className={`w-12 h-12 rounded-lg bg-${cat.color}/10 flex items-center justify-center text-${cat.color}`}>
-                      <cat.icon className="h-6 w-6" />
-                    </div>
-                    <span className={`font-data text-xs text-${cat.color} bg-${cat.color}/5 px-3 py-1 rounded-full`}>
-                      {cat.calculators.length} Tools
-                    </span>
-                  </div>
-
-                  {/* Content */}
-                  <h3 className="text-lg font-semibold mb-2 text-on-surface">
-                    {cat.name}
-                  </h3>
-                  <p className="text-sm text-on-surface-variant mb-6">
-                    {cat.description}
-                  </p>
-
-                  {/* CTA */}
-                  <div className={`flex items-center text-${cat.color} label-caps tracking-widest group-hover:gap-4 transition-all`}>
-                    {cat.cta}
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       {/* Features Section */}
       <section className="relative px-6 py-32 bg-surface-container-low overflow-hidden">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -680,6 +618,68 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Categories Grid */}
+      <section id="categories" className="px-6 py-24 max-w-[1440px] mx-auto w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <div className="max-w-xl">
+            <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4">
+              A complete ecosystem for your financial journey.
+            </h2>
+            <p className="text-on-surface-variant">
+              Every tool is built on verified historical data and peer-reviewed financial models.
+            </p>
+          </div>
+          <a href="#categories" className="font-data text-sm text-primary flex items-center gap-2 hover:text-primary/80 transition-colors">
+            Explore All Modules
+            <LayoutGrid className="h-4 w-4" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((cat, i) => (
+            <motion.div
+              key={cat.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+            >
+              <Link href={cat.calculators[0].href}>
+                <div className={`glass-effect p-8 rounded-2xl group hover:border-${cat.color}/40 transition-all cursor-pointer relative overflow-hidden h-full`}>
+                  {/* Background Icon */}
+                  <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <cat.icon className="w-32 h-32" />
+                  </div>
+
+                  {/* Header */}
+                  <div className="flex justify-between items-start mb-12">
+                    <div className={`w-12 h-12 rounded-lg bg-${cat.color}/10 flex items-center justify-center text-${cat.color}`}>
+                      <cat.icon className="h-6 w-6" />
+                    </div>
+                    <span className={`font-data text-xs text-${cat.color} bg-${cat.color}/5 px-3 py-1 rounded-full`}>
+                      {cat.calculators.length} Tools
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <h3 className="text-lg font-semibold mb-2 text-on-surface">
+                    {cat.name}
+                  </h3>
+                  <p className="text-sm text-on-surface-variant mb-6">
+                    {cat.description}
+                  </p>
+
+                  {/* CTA */}
+                  <div className={`flex items-center text-${cat.color} label-caps tracking-widest group-hover:gap-4 transition-all`}>
+                    {cat.cta}
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </section>
 
