@@ -1,0 +1,4 @@
+yfinance
+fpdf2
+pymupdf
+Pillow
