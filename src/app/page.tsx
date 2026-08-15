@@ -454,7 +454,7 @@ export default function HomePage() {
                       <span className="text-amber-400">Reports</span>
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Investor-voice PDF reports
+                      Investor-wise PDF reports
                     </p>
                   </div>
                 </div>
@@ -574,9 +574,9 @@ export default function HomePage() {
                     <p className="text-sm text-muted-foreground">
                       Powered by Kronos — a financial foundation model
                     </p>
-                    <span className="inline-block mt-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/30">
-                      🧪 In Beta · Coming Soon
-                    </span>
+<span className="inline-block mt-1.5 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/30">
+                        🧪 Coming Soon
+                      </span>
                   </div>
                 </div>
                 <p className="text-on-surface-variant mb-4 max-w-lg">
@@ -750,7 +750,7 @@ export default function HomePage() {
           >
             <div className="text-4xl mb-3">🧪</div>
             <h3 className="text-xl font-bold text-on-surface mb-2">
-              Coming Soon — In Beta
+              Coming Soon
             </h3>
             <p className="text-sm text-on-surface-variant mb-6">
               AI Stock Forecast and Watchlist Scanner are in beta. We&apos;re
