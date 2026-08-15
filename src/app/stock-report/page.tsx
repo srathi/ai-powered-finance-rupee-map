@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { CalculatorLayout } from "@/components/calculator-layout";
 import { resolveStock } from "@/lib/stock-detection";
 import { saveAs } from "file-saver";
-import JSZip from "jszip";
 import {
   Search,
   Building2,
@@ -283,20 +282,13 @@ export default function StockReportPage() {
         return;
       }
       const base = slug(resolved.symbol);
-      if (ok.length === 1) {
+      // Single persona is selected, but loop defensively in case the API
+      // returns more than one report.
+      for (const r of ok) {
         saveAs(
-          dataURItoBlob(`data:application/pdf;base64,${ok[0].data}`),
-          `${ok[0].persona}_${base}.pdf`
+          dataURItoBlob(`data:application/pdf;base64,${r.data}`),
+          `${r.persona}_${base}.pdf`
         );
-      } else {
-        const zip = new JSZip();
-        for (const r of ok) {
-          zip.file(`${r.persona}_${base}.pdf`, r.data as string, {
-            base64: true,
-          });
-        }
-        const blob = await zip.generateAsync({ type: "blob" });
-        saveAs(blob, `persona-reports_${base}.zip`);
       }
     } catch {
       setError("Network error — please try again.");
@@ -309,7 +301,7 @@ export default function StockReportPage() {
     <CalculatorLayout
       title="Stock Persona Reports"
       description="Generate India-branded investor-style PDF reports for any NSE/BSE stock, written in the voice of famous investors."
-      info="Search a company or ticker (same as the Live Stock Prices page) to resolve it, pick the investor personas you want, then download their reports as PDFs or a ZIP."
+      info="Search a company or ticker (same as the Live Stock Prices page) to resolve it, pick the investor persona you want, then download the report as a PDF."
       inputs={
         <Card>
           <div className="p-6 space-y-5">
