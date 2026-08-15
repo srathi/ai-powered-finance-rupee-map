@@ -115,6 +115,7 @@ export default function StockReportPage() {
   const [resolving, setResolving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWip, setShowWip] = useState(false);
   const [reports, setReports] = useState<PersonaReport[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -247,58 +248,14 @@ export default function StockReportPage() {
   };
 
   const handleGenerate = async () => {
-    if (!resolved) {
-      setError("Resolve a stock first.");
-      return;
-    }
-    if (!selected) {
-      setError("Select an investor persona.");
-      return;
-    }
-    setGenerating(true);
-    setError(null);
-    setReports([]);
-    try {
-      const res = await fetch("/api/persona-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol: resolved.symbol,
-          companyName: resolved.companyName,
-          personas: selected ? [selected] : [],
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.error || "Failed to generate reports.");
-        return;
-      }
-      const data = await res.json();
-      const reps: PersonaReport[] = data.reports || [];
-      const ok = reps.filter((r) => r.data);
-      setReports(reps);
-      if (ok.length === 0) {
-        setError("No reports could be generated for this stock.");
-        return;
-      }
-      const base = slug(resolved.symbol);
-      // Single persona is selected, but loop defensively in case the API
-      // returns more than one report.
-      for (const r of ok) {
-        saveAs(
-          dataURItoBlob(`data:application/pdf;base64,${r.data}`),
-          `${r.persona}_${base}.pdf`
-        );
-      }
-    } catch {
-      setError("Network error — please try again.");
-    } finally {
-      setGenerating(false);
-    }
+    // Persona report generation is a work-in-progress: surface a status popup
+    // instead of running the pipeline until the feature is finished.
+    setShowWip(true);
   };
 
   return (
-    <CalculatorLayout
+    <>
+      <CalculatorLayout
       title="Stock Persona Reports"
       description="Generate India-branded investor-style PDF reports for any NSE/BSE stock, written in the voice of famous investors."
       info="Search a company or ticker (same as the Live Stock Prices page) to resolve it, pick the investor persona you want, then download the report as a PDF."
@@ -514,16 +471,7 @@ export default function StockReportPage() {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 shrink-0"
-                        onClick={() =>
-                          saveAs(
-                            dataURItoBlob(
-                              `data:application/pdf;base64,${r.data}`
-                            ),
-                            `${r.persona}_${
-                              resolved ? slug(resolved.symbol) : "report"
-                            }.pdf`
-                          )
-                        }
+                        onClick={() => setShowWip(true)}
                       >
                         <Download className="h-3.5 w-3.5" />
                         PDF
@@ -561,5 +509,44 @@ export default function StockReportPage() {
         </div>
       }
     />
+      {showWip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setShowWip(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-amber-500/15 p-2 text-amber-600">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Work in progress
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Persona report generation is under development. We are finishing
+                  the investor-specific analysis and PDF engine &mdash; please check
+                  back soon.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWip(false)}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-5 flex justify-end">
+              <Button onClick={() => setShowWip(false)}>Got it</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
