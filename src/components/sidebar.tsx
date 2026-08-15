@@ -22,6 +22,8 @@ import {
   Map,
   PieChart,
   Focus,
+  LineChart,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -166,6 +168,14 @@ const categories: Category[] = [
       { name: "Present Value", href: "/present-value" },
     ],
   },
+  {
+    name: "Markets",
+    icon: <LineChart className="h-5 w-5" />,
+    materialIcon: "candlestick_chart",
+    items: [
+      { name: "Watchlist Scanner", href: "/watchlist-forecast" },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -237,6 +247,52 @@ export function Sidebar() {
           <PieChart className="h-4 w-4 mr-3" />
           <span className="text-sm font-medium">Portfolio Review</span>
           <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">
+            AI
+          </span>
+        </Link>
+
+        {/* Persona Reports */}
+        <Link
+          href="/stock-report"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center px-4 py-2.5 rounded-xl transition-all",
+            pathname === "/stock-report"
+              ? "bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20 text-amber-400"
+              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface border border-transparent"
+          )}
+        >
+          <FileText className="h-4 w-4 mr-3" />
+          <div className="flex-1">
+            <span className="text-sm font-medium">Persona Reports</span>
+            <p className="text-[10px] text-muted-foreground">
+              Investor-wise PDF reports
+            </p>
+          </div>
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium">
+            PDF
+          </span>
+        </Link>
+
+        {/* AI Stock Forecast (Kronos) */}
+        <Link
+          href="/stock-forecast"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center px-4 py-2.5 rounded-xl transition-all",
+            pathname === "/stock-forecast" || pathname === "/watchlist-forecast"
+              ? "bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 border border-cyan-500/20 text-cyan-400"
+              : "text-on-surface-variant hover:bg-surface-hover hover:text-on-surface border border-transparent"
+          )}
+        >
+          <LineChart className="h-4 w-4 mr-3" />
+          <div className="flex-1">
+            <span className="text-sm font-medium">AI Stock Forecast</span>
+            <p className="text-[10px] text-muted-foreground">
+              Kronos price prediction
+            </p>
+          </div>
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium">
             AI
           </span>
         </Link>
