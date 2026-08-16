@@ -352,15 +352,14 @@ graph TB
 
 ## Features
 
-### 58+ Financial Calculators
-- **Retirement**: Deterministic, Stochastic, Test Adequacy, What-if, Withdrawal Rates, History Back-test
-- **Investment**: SIP, Lumpsum, Step-up SIP, SWP, STP, Goal Planner, CAGR, XIRR, Returns, Stock Prices, Fund Compare
-- **Loan**: EMI, Home, Car, Personal, Education, Eligibility, Affordability, Balance, Comparison, Prepayment
-- **Tax**: Income Tax, Old vs New Regime, HRA, Gratuity, Leave Encashment, Section 80C
-- **Savings**: FD, RD, PPF, EPF, NPS, Sukanya, NSC, SCSS
-- **Insurance**: Life Insurance Need, Term Insurance, Child Education, Health Insurance
-- **Business**: GST, Discount, Break-even, Profit Margin
-- **General**: Inflation, Purchasing Power, Rule of 72, Compound/Simple Interest, Future/Present Value
+RupeeMap packs a full personal-finance toolkit for Indian investors — AI assistants, live market data, forecasting, planning calculators, portfolio review, and persona-driven equity research reports.
+
+### Persona Reports (Equity Research)
+- 11 investor personas (Warren Buffett, Charlie Munger, Benjamin Graham, Peter Lynch, Mohnish Pabrai, Joel Greenblatt, Howard Marks, Ashwath Damodaran, Raamdeo Agarwal, Robert Kiyosaki, Buffett-Munger) each with its own fatal-flaw equity-screen framework
+- Server-side PDF generation (`persona-reports/`, Python worker + `generate_one.py`) for any NSE stock using live financials from Yahoo Finance
+- **Understandability & growth story**: curated business summary plus a live business overview (from public filings) and a computed growth-prospects paragraph
+- **Miscellaneous Insights**: analyst & fund-house ratings (consensus distribution + 3-month upgrade/downgrade trend), recent quarterly momentum, capital allocation & ownership, key risks to monitor, and valuation context
+- Branded, persona-specific PDFs rendered with `gen_reports.Report`; batch generation driven by `gen_index.py` over Nifty 500 / mid-cap / small-cap company lists
 
 ### ArthaAI Chatbot
 - Streaming responses via Groq SDK (Llama 3.3 70B, auto-fallback to GPT-OSS-20B → Llama 3.1 8B on rate limits/404s)
@@ -411,6 +410,16 @@ graph TB
 - Fixed sidebar navigation with expandable categories
 - Responsive design (mobile + desktop)
 - JetBrains Mono for data, Geist for narrative
+
+### 58+ Financial Calculators
+- **Retirement**: Deterministic, Stochastic, Test Adequacy, What-if, Withdrawal Rates, History Back-test
+- **Investment**: SIP, Lumpsum, Step-up SIP, SWP, STP, Goal Planner, CAGR, XIRR, Returns, Stock Prices, Fund Compare
+- **Loan**: EMI, Home, Car, Personal, Education, Eligibility, Affordability, Balance, Comparison, Prepayment
+- **Tax**: Income Tax, Old vs New Regime, HRA, Gratuity, Leave Encashment, Section 80C
+- **Savings**: FD, RD, PPF, EPF, NPS, Sukanya, NSC, SCSS
+- **Insurance**: Life Insurance Need, Term Insurance, Child Education, Health Insurance
+- **Business**: GST, Discount, Break-even, Profit Margin
+- **General**: Inflation, Purchasing Power, Rule of 72, Compound/Simple Interest, Future/Present Value
 
 ## Getting Started
 
@@ -464,8 +473,8 @@ npm start
 - **Research Paper**: "Boosting Retirement Income through Dynamic Withdrawals" (SSRN 5381648) - parsed into 51 chunks for RAG
 - **Stock Data**: Yahoo Finance API (free, no key required)
 
-## Tax Calculations
-
+## Ta   x Calculations
+5
 ### New Regime (FY 2024-25)
 | Income Slab | Tax Rate |
 |-------------|----------|
@@ -496,4 +505,4 @@ See [SESSION_STATE.md](./SESSION_STATE.md) for detailed development state and hi
 
 ## License
 
-MIT — see the [LICENSE](./LICENSE) file.
+Private - All rights reserved.any 
