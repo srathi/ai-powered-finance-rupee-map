@@ -315,13 +315,6 @@ export default function StockReportPage() {
         setError("No reports could be generated for this stock.");
         return;
       }
-      const base = slug(resolved.symbol);
-      for (const r of ok) {
-        saveAs(
-          dataURItoBlob(`data:application/pdf;base64,${r.data}`),
-          `${r.persona}_${base}.pdf`
-        );
-      }
     } catch {
       setError("Network error — please try again.");
     } finally {
@@ -527,7 +520,7 @@ export default function StockReportPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 {/* Left: generated report list (fully covered) */}
-                <div className="space-y-3 lg:h-[72vh] lg:overflow-y-auto lg:pr-1">
+                <div className="space-y-3 lg:h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pr-1">
                   {reports.map((r) => (
                     <Card key={r.persona}>
                       <div className="p-4 flex items-center justify-between gap-3">
@@ -588,7 +581,7 @@ export default function StockReportPage() {
 
                 {/* Right: sticky PDF preview pane with its own download */}
                 <div className="lg:sticky lg:top-6">
-                  <div className="rounded-xl border border-border bg-muted/20 overflow-hidden h-[72vh] flex flex-col">
+                  <div className="rounded-xl border border-border bg-muted/20 overflow-hidden h-[75vh] lg:h-[calc(100vh-5rem)] flex flex-col">
                     <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-2">
                       <span className="text-xs uppercase tracking-wider text-muted-foreground">
                         Report preview
