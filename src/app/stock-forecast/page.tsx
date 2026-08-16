@@ -9,7 +9,7 @@ import { SliderField } from "@/components/input-controls";
 import { ForecastChart, type ForecastPoint } from "@/components/forecast-chart";
 import { ProbabilityGauge } from "@/components/probability-gauge";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import { TrendingUp, TrendingDown, Sparkles, ExternalLink, X } from "lucide-react";
+import { TrendingUp, Sparkles, ExternalLink, X } from "lucide-react";
 
 interface ForecastResponse {
   symbol: string;
@@ -234,17 +234,7 @@ export default function StockForecastPage() {
                   label="Expected Change"
                   value={`${changePositive ? "+" : ""}${formatPercent(data.change_pct)}`}
                   variant={changePositive ? "success" : "danger"}
-                  sublabel={
-                    changePositive ? (
-                      <span className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" /> Bullish bias
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <TrendingDown className="h-3 w-3" /> Bearish bias
-                      </span>
-                    )
-                  }
+                  sublabel={changePositive ? "Bullish bias" : "Bearish bias"}
                 />
               </SummaryGrid>
 
