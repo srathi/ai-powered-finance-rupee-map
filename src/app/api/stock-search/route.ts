@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "node:fs";
+import path from "node:path";
 
 const YAHOO_SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search";
 
@@ -19,18 +21,87 @@ interface YahooQuote {
   industryDisp: string;
 }
 
+// Local NSE equity index (built from the NSE listed-companies list) powers
+// reliable Indian-name autocomplete. Yahoo's global search buries Indian issues
+// for short queries or name fragments (e.g. "parag" -> foreign "Paragon").
+interface IndianEquity {
+  symbol: string;
+  name: string;
+  exchange: string;
+  exchangeCode: string;
+  fullSymbol: string;
+}
+let _indexCache: IndianEquity[] | null = null;
+function loadIndianIndex(): IndianEquity[] {
+  if (_indexCache) return _indexCache;
+  try {
+    const p = path.join(process.cwd(), "src", "data", "indian-equities.json");
+    _indexCache = JSON.parse(fs.readFileSync(p, "utf-8"));
+  } catch {
+    _indexCache = [];
+  }
+  return _indexCache ?? [];
+}
+
+function searchIndianIndex(q: string, limit = 12) {
+  const idx = loadIndianIndex();
+  const ql = q.toLowerCase();
+  return idx
+    .map((e) => {
+      const sl = e.symbol.toLowerCase();
+      const nl = e.name.toLowerCase();
+      let s = 0;
+      if (nl === ql || sl === ql) s = 100;
+      else if (nl.startsWith(ql)) s = 80;
+      else if (sl.startsWith(ql)) s = 70;
+      else if (nl.includes(ql)) s = 50;
+      else if (sl.includes(ql)) s = 40;
+      return { e, s };
+    })
+    .filter((x) => x.s > 0)
+    .sort(
+      (a, b) =>
+        b.s - a.s ||
+        a.e.name.length - b.e.name.length ||
+        a.e.symbol.length - b.e.symbol.length
+    )
+    .slice(0, limit)
+    .map((x) => ({
+      symbol: x.e.symbol,
+      fullSymbol: x.e.fullSymbol,
+      companyName: x.e.name,
+      exchange: x.e.exchange,
+      exchangeCode: x.e.exchangeCode,
+      sector: "",
+      industry: "",
+      isIndian: true,
+    }));
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const query = searchParams.get("q")?.trim();
-  // Opt-in restriction: when set, only NSE/BSE (Indian) equities are returned.
-  // Used by the Persona Reports page; other pages keep the full universe.
+  // Opt-in restriction: when set, only NSE/BSE (Indian) equities are returned,
+  // resolved from the local index for reliable name/ticker matching.
   const indianOnly = searchParams.get("indianOnly") === "1";
 
   if (!query || query.length < 2) {
     return NextResponse.json({ results: [] });
   }
 
-  // Check cache
+  // Indian-only path: serve from the local NSE index (offline, deterministic).
+  if (indianOnly) {
+    const key = `in:${query.toLowerCase()}`;
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      return NextResponse.json(cached.data);
+    }
+    const data = { results: searchIndianIndex(query), query };
+    cache.set(key, { data, ts: Date.now() });
+    return NextResponse.json(data);
+  }
+
+  // Full-universe path (e.g. Live Stock Prices): Yahoo global search.
   const cacheKey = query.toLowerCase();
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
@@ -53,10 +124,9 @@ export async function GET(request: NextRequest) {
     const json = await res.json();
     const quotes: YahooQuote[] = json?.quotes ?? [];
 
-    // Filter to equities only, optionally restrict to NSE/BSE
+    // Filter to equities only
     const results = quotes
       .filter((q) => q.quoteType === "EQUITY")
-      .filter((q) => !indianOnly || q.exchange === "NSI" || q.exchange === "BSE")
       .map((q) => ({
         symbol: q.symbol.replace(/\.(NS|BO)$/, ""),
         fullSymbol: q.symbol,
@@ -65,7 +135,6 @@ export async function GET(request: NextRequest) {
         exchangeCode: q.exchange,
         sector: q.sectorDisp || q.sector || "",
         industry: q.industryDisp || q.industry || "",
-        // Boost NSE/BSE results
         isIndian: q.exchange === "NSI" || q.exchange === "BSE",
       }))
       .sort((a, b) => {
