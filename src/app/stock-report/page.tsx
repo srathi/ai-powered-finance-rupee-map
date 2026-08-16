@@ -518,85 +518,43 @@ export default function StockReportPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                {/* Left: generated report list (fully covered) */}
-                <div className="space-y-3 lg:h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pr-1">
-                  {reports.map((r) => (
-                    <Card key={r.persona}>
-                      <div className="p-4 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <FileText className="h-5 w-5 text-primary shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium capitalize truncate">
-                              {r.persona.replace(/-/g, " ")}
+              {/* Persona report cards — compact horizontal strip on top */}
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {reports.map((r) => (
+                  <Card key={r.persona} className="min-w-[240px] flex-1">
+                    <div className="p-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="h-5 w-5 text-primary shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium capitalize truncate">
+                            {r.persona.replace(/-/g, " ")}
+                          </p>
+                          {r.error ? (
+                            <p className="text-xs text-rose-400 truncate">
+                              {r.error}
                             </p>
-                            {r.error ? (
-                              <p className="text-xs text-rose-400 truncate">
-                                {r.error}
-                              </p>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">
-                                Ready to download
-                              </p>
-                            )}
-                          </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Ready to download
+                            </p>
+                          )}
                         </div>
-                        {r.data && (
-                          <div className="flex items-center gap-2 shrink-0">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1.5"
-                              onClick={() => setPreview(r)}
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                              Preview
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1.5"
-                              onClick={() => {
-                                if (IS_DEPLOYMENT) {
-                                  setShowWip(true);
-                                  return;
-                                }
-                                if (resolved) {
-                                  saveAs(
-                                    dataURItoBlob(`data:application/pdf;base64,${r.data}`),
-                                    `${r.persona}_${slug(resolved.symbol)}.pdf`
-                                  );
-                                }
-                              }}
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                              PDF
-                            </Button>
-                          </div>
-                        )}
                       </div>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Right: sticky PDF preview pane with its own download */}
-                <div className="lg:sticky lg:top-6">
-                  <div className="rounded-xl border border-border bg-muted/20 overflow-hidden h-[75vh] lg:h-[calc(100vh-5rem)] flex flex-col">
-                    <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-2">
-                      <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Report preview
-                      </span>
-                      <div className="flex items-center gap-2 min-w-0">
-                        {preview && (
-                          <span className="text-xs font-medium capitalize truncate">
-                            {preview.persona.replace(/-/g, " ")}
-                          </span>
-                        )}
-                        {preview?.data && (
+                      {r.data && (
+                        <div className="flex items-center gap-2 shrink-0">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1.5 shrink-0"
+                            className="gap-1.5"
+                            onClick={() => setPreview(r)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            Preview
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
                             onClick={() => {
                               if (IS_DEPLOYMENT) {
                                 setShowWip(true);
@@ -604,35 +562,73 @@ export default function StockReportPage() {
                               }
                               if (resolved) {
                                 saveAs(
-                                  dataURItoBlob(`data:application/pdf;base64,${preview.data}`),
-                                  `${preview.persona}_${slug(resolved.symbol)}.pdf`
+                                  dataURItoBlob(`data:application/pdf;base64,${r.data}`),
+                                  `${r.persona}_${slug(resolved.symbol)}.pdf`
                                 );
                               }
                             }}
                           >
                             <Download className="h-3.5 w-3.5" />
-                            Download
+                            PDF
                           </Button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1 bg-white">
-                      {previewUrl ? (
-                        <iframe
-                          title="Persona report preview"
-                          src={previewUrl}
-                          className="w-full h-full border-0"
-                        />
-                      ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground p-6">
-                          <FileText className="h-10 w-10 mb-3 opacity-30" />
-                          <p className="text-sm">
-                            Select a generated report to preview it here.
-                          </p>
                         </div>
                       )}
                     </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* PDF preview — full width grid */}
+              <div className="rounded-xl border border-border bg-muted/20 overflow-hidden h-[75vh] lg:h-[calc(100vh-5rem)] flex flex-col">
+                <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-2">
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Report preview
+                  </span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {preview && (
+                      <span className="text-xs font-medium capitalize truncate">
+                        {preview.persona.replace(/-/g, " ")}
+                      </span>
+                    )}
+                    {preview?.data && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 shrink-0"
+                        onClick={() => {
+                          if (IS_DEPLOYMENT) {
+                            setShowWip(true);
+                            return;
+                          }
+                          if (resolved) {
+                            saveAs(
+                              dataURItoBlob(`data:application/pdf;base64,${preview.data}`),
+                              `${preview.persona}_${slug(resolved.symbol)}.pdf`
+                            );
+                          }
+                        }}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download
+                      </Button>
+                    )}
                   </div>
+                </div>
+                <div className="flex-1 bg-white">
+                  {previewUrl ? (
+                    <iframe
+                      title="Persona report preview"
+                      src={previewUrl}
+                      className="w-full h-full border-0"
+                    />
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground p-6">
+                      <FileText className="h-10 w-10 mb-3 opacity-30" />
+                      <p className="text-sm">
+                        Select a generated report to preview it here.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
