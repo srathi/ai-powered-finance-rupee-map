@@ -634,13 +634,13 @@ class Report(FPDF):
         self.ln(1)
         self.section_title("Intrinsic Value & Margin of Safety")
         if u.get("iv_dcf") is not None:
-            row("DCF intrinsic value (Rs cr)", common_fin.fmt_num(u.get("iv_dcf")))
+            row("DCF intrinsic value (Rs cr)", common_fin.fmt_crore(u.get("iv_dcf")))
             row("  margin of safety", common_fin.fmt_pct(u.get("mos_dcf")))
         if u.get("graham_number") is not None:
             row("Graham number", common_fin.fmt_num(u.get("graham_number")))
             row("  margin of safety", common_fin.fmt_pct(u.get("mos_graham")))
         if u.get("iv_owner_earnings") is not None:
-            row("Owner-earnings value (Rs cr)", common_fin.fmt_num(u.get("iv_owner_earnings")))
+            row("Owner-earnings value (Rs cr)", common_fin.fmt_crore(u.get("iv_owner_earnings")))
             row("  margin of safety", common_fin.fmt_pct(u.get("mos_owner_earnings")))
         common_fin.render_note(self, "How to read: " + common_fin.explain_intrinsic_value(u))
 

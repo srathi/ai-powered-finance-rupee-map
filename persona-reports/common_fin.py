@@ -101,7 +101,7 @@ def _s_band(v, great, ok):
 # --------------------------------------------------------------------------
 def _cagr(vals):
     """Geometric annual growth across a chronological series (percent)."""
-    vals = [v for v in vals if v is not None]
+    vals = [v for v in vals if v is not None and math.isfinite(v)]
     if len(vals) < 2:
         return None
     oldest, newest = vals[0], vals[-1]
@@ -111,7 +111,10 @@ def _cagr(vals):
     if n <= 0:
         return None
     try:
-        return ((newest / oldest) ** (1.0 / n) - 1.0) * 100.0
+        ratio = newest / oldest
+        if ratio <= 0 or not math.isfinite(ratio):
+            return None
+        return (ratio ** (1.0 / n) - 1.0) * 100.0
     except Exception:
         return None
 
@@ -374,19 +377,47 @@ def universal_flaws(u, is_financial=False):
 def fmt_pct(v, nd=1):
     if v is None:
         return "n/a"
+    try:
+        if math.isnan(v):
+            return "n/a"
+    except Exception:
+        pass
     return f"{v:.{nd}f}%"
 
 
 def fmt_x(v, nd=2):
     if v is None:
         return "n/a"
+    try:
+        if math.isnan(v):
+            return "n/a"
+    except Exception:
+        pass
     return f"{v:.{nd}f}x"
 
 
 def fmt_num(v, nd=1):
     if v is None:
         return "n/a"
+    try:
+        if math.isnan(v):
+            return "n/a"
+    except Exception:
+        pass
     return f"{v:.{nd}f}"
+
+
+def fmt_crore(v, nd=1):
+    """Format a Rupee amount as crore with thousands separators."""
+    v = num(v)
+    if v is None:
+        return "n/a"
+    try:
+        if math.isnan(v):
+            return "n/a"
+    except Exception:
+        pass
+    return f"{v / 1e7:,.{nd}f}"
 
 
 def stars(n):
@@ -449,6 +480,7 @@ def compute_universal(info=None, fin=None, bs=None, cf=None, price=None,
         u["quick_ratio"] = None
 
     # ----- 3) FCF yield + FCF growth consistency --------------------------
+    fcf_avg = None
     if fcf_latest is not None and mcap not in (None, 0):
         u["fcf_yield"] = num(fcf_latest) / num(mcap)  # fraction
         ocf_series = col_series(cf, "Operating Cash Flow")
@@ -457,7 +489,16 @@ def compute_universal(info=None, fin=None, bs=None, cf=None, price=None,
         for i in range(min(len(ocf_series), len(capex_series))):
             if ocf_series[i] is not None and capex_series[i] is not None:
                 fcf_series.append(ocf_series[i] + capex_series[i])
-        u["fcf_cagr"] = _cagr(fcf_series)
+        # Average of positive FCF years (most recent) is the stable, sustainable
+        # "owner earnings" basis - a single anomalous/negative year no longer
+        # distorts the intrinsic value.
+        recent = [v for v in fcf_series if v is not None and math.isfinite(v)][-5:]
+        pos = [v for v in recent if v > 0]
+        if pos:
+            fcf_avg = sum(pos) / len(pos)
+        # FCF CAGR: prefer the positive-FCF-years series (a negative base makes
+        # CAGR undefined); fall back to the full series otherwise.
+        u["fcf_cagr"] = _cagr(pos) if pos else _cagr(fcf_series)
     else:
         u["fcf_yield"] = None
         u["fcf_cagr"] = None
@@ -469,8 +510,11 @@ def compute_universal(info=None, fin=None, bs=None, cf=None, price=None,
         u["fwd_pe_spread"] = None
 
     # ----- 6/7) intrinsic value + margin of safety ------------------------
+    # Use the multi-year average FCF for valuation when available; otherwise
+    # fall back to the latest year.
+    fcf_for_iv = fcf_avg if fcf_avg is not None else fcf_latest
     g_for_iv = eps_g if eps_g is not None else rev_g
-    iv_dcf = dcf_value(fcf_latest, growth_pct=g_for_iv)
+    iv_dcf = dcf_value(fcf_for_iv, growth_pct=g_for_iv)
     u["iv_dcf"] = iv_dcf
     u["mos_dcf"] = margin_of_safety(iv_dcf, mcap)
 
@@ -478,7 +522,7 @@ def compute_universal(info=None, fin=None, bs=None, cf=None, price=None,
     u["graham_number"] = gn
     u["mos_graham"] = margin_of_safety(gn, price)
 
-    oe = owner_earnings_value(fcf_latest)
+    oe = owner_earnings_value(fcf_for_iv)
     u["iv_owner_earnings"] = oe
     u["mos_owner_earnings"] = margin_of_safety(oe, mcap)
 
