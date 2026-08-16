@@ -1,10 +1,10 @@
 # RupeeMap
 
-A production-ready financial calculator web application with 58+ calculators, AI-powered chatbot, portfolio analysis, and interactive financial literacy platform.
+RupeeMap packs a full personal-finance toolkit for Indian investors — AI assistants, live market data, forecasting, planning calculators, portfolio review, and persona-driven equity research reports.
 
 ## Overview
 
-RupeeMap is a comprehensive personal finance tool built with Next.js 16, featuring retirement planning calculators, investment tools, loan calculators, tax planning, insurance analysis, AI-powered portfolio review, a RAG-powered AI chatbot (ArthaAI), and **AI stock forecasting powered by Kronos** — an open-source financial foundation model — for financial guidance with Indian market context.
+RupeeMap is a comprehensive personal-finance platform for Indian investors, built with Next.js 16. It brings together live market data and charts, 58+ planning calculators (retirement, investment, loan, tax, savings, insurance, business), AI stock forecasting powered by **Kronos** (an open-source financial foundation model), an AI-powered portfolio review, a RAG-powered AI chatbot (ArthaAI), and **persona-driven equity research reports** that screen any NSE stock through the lens of 11 famous investor frameworks (Buffett, Munger, Graham, Lynch, Pabrai, Greenblatt, Marks, Damodaran, Agarwal, Kiyosaki) — all grounded in Indian market context.
 
 ## Tech Stack
 
