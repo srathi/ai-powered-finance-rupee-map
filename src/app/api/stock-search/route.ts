@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const YAHOO_SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search";
+const UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
 
 // Simple in-memory cache (10s TTL)
 const cache = new Map<string, { data: unknown; ts: number }>();
@@ -78,6 +80,35 @@ function searchIndianIndex(q: string, limit = 12) {
     }));
 }
 
+// Yahoo fallback (Indian-only) used when the local index yields no matches.
+async function yahooIndianResults(query: string) {
+  try {
+    const url = `${YAHOO_SEARCH_URL}?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0&listsCount=0`;
+    const res = await fetch(url, { headers: { "User-Agent": UA } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const quotes: YahooQuote[] = json?.quotes ?? [];
+    return quotes
+      .filter(
+        (q) =>
+          q.quoteType === "EQUITY" &&
+          (q.exchange === "NSI" || q.exchange === "BSE")
+      )
+      .map((q) => ({
+        symbol: q.symbol.replace(/\.(NS|BO)$/, ""),
+        fullSymbol: q.symbol,
+        companyName: q.longname || q.shortname,
+        exchange: q.exchDisp || q.exchange,
+        exchangeCode: q.exchange,
+        sector: q.sectorDisp || q.sector || "",
+        industry: q.industryDisp || q.industry || "",
+        isIndian: true,
+      }));
+  } catch {
+    return [];
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const query = searchParams.get("q")?.trim();
@@ -96,7 +127,11 @@ export async function GET(request: NextRequest) {
     if (cached && Date.now() - cached.ts < CACHE_TTL) {
       return NextResponse.json(cached.data);
     }
-    const data = { results: searchIndianIndex(query), query };
+    let results = searchIndianIndex(query);
+    if (results.length === 0) {
+      results = await yahooIndianResults(query);
+    }
+    const data = { results, query };
     cache.set(key, { data, ts: Date.now() });
     return NextResponse.json(data);
   }
