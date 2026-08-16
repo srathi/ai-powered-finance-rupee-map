@@ -18,6 +18,12 @@ import {
   Check,
 } from "lucide-react";
 
+// Gate the "Work in progress" popup to production deployments only. Locally
+// (development) the persona pipeline runs directly so the feature can be
+// developed and tested. NODE_ENV is the only env signal reliably inlined into
+// client bundles by Next.js.
+const IS_DEPLOYMENT = process.env.NODE_ENV === "production";
+
 interface SearchResult {
   symbol: string;
   fullSymbol: string;
@@ -248,9 +254,58 @@ export default function StockReportPage() {
   };
 
   const handleGenerate = async () => {
-    // Persona report generation is a work-in-progress: surface a status popup
-    // instead of running the pipeline until the feature is finished.
-    setShowWip(true);
+    if (IS_DEPLOYMENT) {
+      // On the live site, persona report generation is gated behind a
+      // "Work in progress" popup until the feature is finished.
+      setShowWip(true);
+      return;
+    }
+    if (!resolved) {
+      setError("Resolve a stock first.");
+      return;
+    }
+    if (!selected) {
+      setError("Select an investor persona.");
+      return;
+    }
+    setGenerating(true);
+    setError(null);
+    setReports([]);
+    try {
+      const res = await fetch("/api/persona-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symbol: resolved.symbol,
+          companyName: resolved.companyName,
+          personas: selected ? [selected] : [],
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || "Failed to generate reports.");
+        return;
+      }
+      const data = await res.json();
+      const reps: PersonaReport[] = data.reports || [];
+      const ok = reps.filter((r) => r.data);
+      setReports(reps);
+      if (ok.length === 0) {
+        setError("No reports could be generated for this stock.");
+        return;
+      }
+      const base = slug(resolved.symbol);
+      for (const r of ok) {
+        saveAs(
+          dataURItoBlob(`data:application/pdf;base64,${r.data}`),
+          `${r.persona}_${base}.pdf`
+        );
+      }
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -471,7 +526,18 @@ export default function StockReportPage() {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 shrink-0"
-                        onClick={() => setShowWip(true)}
+                        onClick={() => {
+                          if (IS_DEPLOYMENT) {
+                            setShowWip(true);
+                            return;
+                          }
+                          if (resolved) {
+                            saveAs(
+                              dataURItoBlob(`data:application/pdf;base64,${r.data}`),
+                              `${r.persona}_${slug(resolved.symbol)}.pdf`
+                            );
+                          }
+                        }}
                       >
                         <Download className="h-3.5 w-3.5" />
                         PDF

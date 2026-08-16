@@ -11,6 +11,12 @@ import { ProbabilityGauge } from "@/components/probability-gauge";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { TrendingUp, Sparkles, ExternalLink, X } from "lucide-react";
 
+// Gate the "Work in progress" popup to production deployments only. Locally
+// (development) the forecast pipeline runs directly so the feature can be
+// developed and tested. NODE_ENV is the only env signal reliably inlined into
+// client bundles by Next.js.
+const IS_DEPLOYMENT = process.env.NODE_ENV === "production";
+
 interface ForecastResponse {
   symbol: string;
   exchange: string;
@@ -65,9 +71,38 @@ export default function StockForecastPage() {
 
   async function generate(e?: React.FormEvent) {
     e?.preventDefault();
-    // AI Stock Forecast is a work-in-progress: surface a status popup
-    // instead of running the pipeline until the feature is finished.
-    setShowWip(true);
+    if (IS_DEPLOYMENT) {
+      // On the live site, the forecast is gated behind a "Work in progress"
+      // popup until the feature is finished.
+      setShowWip(true);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stock-forecast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticker: ticker.trim(),
+          exchange,
+          predLen,
+          paths,
+          model: model || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || "Failed to generate forecast.");
+        return;
+      }
+      const d = (await res.json()) as ForecastResponse;
+      setData(d);
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const changePositive = (data?.change_pct ?? 0) >= 0;
