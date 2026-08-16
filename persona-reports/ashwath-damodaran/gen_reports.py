@@ -2,6 +2,7 @@
 """Generate branded Aswath Damodaran-style equity screen PDFs for RupeeMap.in."""
 import os
 from fpdf import FPDF
+import common_fin  # shared quantitative engine
 
 FONT = os.getenv("PERSONA_FONT", "/Library/Fonts/Arial Unicode.ttf")
 OUT = os.path.join("/tmp", "ashwath-damodaran_reports")
@@ -365,6 +366,7 @@ class Report(FPDF):
             self.set_font("Arial", "", 10)
             self.set_text_color(*GREY)
             self.cell(0, 6, s("Equity Research  -  Aswath Damodaran Style Screen"), ln=1)
+            self.set_xy(44, 26)
         else:
             self.set_xy(18, 16)
             self.set_font("Arial", "B", 13)
@@ -373,7 +375,7 @@ class Report(FPDF):
             self.set_font("Arial", "", 9)
             self.set_text_color(*GREY)
             self.cell(0, 6, s("Equity Research  -  Aswath Damodaran Style Screen"), ln=1)
-        self.set_xy(44, 26)
+            self.set_xy(18, 32)
         self.set_font("Arial", "B", 9)
         self.set_text_color(*TEAL2)
         self.cell(0, 6, s("QUICK RESEARCH REPORT"), ln=1)
@@ -585,6 +587,75 @@ class Report(FPDF):
         self.set_text_color(*DARK)
 
     # ---------- body ----------
+    # ---- universal quantitative deep-dive (common_fin) ----
+    def render_universal(self):
+        d = self.data
+        u = d.get("universal") or {}
+        if not u:
+            return
+
+        def row(label, value):
+            self.set_font("Arial", "B", 9.5)
+            self.set_text_color(*NAVY)
+            self.set_x(18)
+            self.cell(92, 5.4, s(label), ln=0)
+            self.set_text_color(*DARK)
+            self.set_font("Arial", "", 9.5)
+            self.cell(0, 5.4, s(value), ln=1)
+
+        self.ln(2)
+        self.section_title("Quantitative Deep-Dive (5-Year View)")
+        row("Revenue CAGR", common_fin.fmt_pct(u.get("rev_cagr")))
+        row("Net-profit CAGR", common_fin.fmt_pct(u.get("ni_cagr")))
+        row("EPS CAGR", common_fin.fmt_pct(u.get("eps_cagr")))
+        row("FCF CAGR", common_fin.fmt_pct(u.get("fcf_cagr")))
+        row("EPS positive (of years)", common_fin.fmt_pct(u.get("eps_positive_pct")))
+        row("EPS growth-consistency", common_fin.fmt_pct(u.get("eps_growth_consistency")))
+        row("Interest coverage", common_fin.fmt_x(u.get("interest_coverage")))
+        row("Current ratio", common_fin.fmt_x(u.get("current_ratio")))
+        row("Quick ratio", common_fin.fmt_x(u.get("quick_ratio")))
+        fy = u.get("fcf_yield")
+        row("FCF yield", common_fin.fmt_pct(fy * 100.0 if fy is not None else None))
+        sp = u.get("fwd_pe_spread")
+        if sp is not None:
+            row("Forward vs trailing P/E", f'{common_fin.fmt_pct(sp, 0)} ({"fwd cheaper" if sp > 0 else "fwd richer"})')
+        else:
+            row("Forward vs trailing P/E", "n/a")
+
+        self.ln(1)
+        self.section_title("Intrinsic Value & Margin of Safety")
+        if u.get("iv_dcf") is not None:
+            row("DCF intrinsic value (Rs cr)", common_fin.fmt_num(u.get("iv_dcf")))
+            row("  margin of safety", common_fin.fmt_pct(u.get("mos_dcf")))
+        if u.get("graham_number") is not None:
+            row("Graham number", common_fin.fmt_num(u.get("graham_number")))
+            row("  margin of safety", common_fin.fmt_pct(u.get("mos_graham")))
+        if u.get("iv_owner_earnings") is not None:
+            row("Owner-earnings value (Rs cr)", common_fin.fmt_num(u.get("iv_owner_earnings")))
+            row("  margin of safety", common_fin.fmt_pct(u.get("mos_owner_earnings")))
+        common_fin.render_note(self, "How to read: " + common_fin.explain_intrinsic_value(u))
+
+        self.ln(1)
+        self.section_title("Composite Score")
+        comp = u.get("composite")
+        st = u.get("stars")
+        if comp is not None:
+            self.set_font("Arial", "B", 11)
+            self.set_text_color(*TEAL2)
+            self.set_x(18)
+            self.cell(0, 7, s(f"Overall: {comp:.0f}/100   {common_fin.stars(st)}"), ln=1)
+            self.set_font("Arial", "", 8.5)
+            self.set_text_color(*GREY)
+            self.set_x(18)
+            self.multi_cell(174, 4.6, s(
+                "Sub-scores -> Quality "
+                + common_fin.fmt_num(u.get("sub_quality"))
+                + " | Value " + common_fin.fmt_num(u.get("sub_value"))
+                + " | Safety " + common_fin.fmt_num(u.get("sub_safety"))
+                + " | Growth " + common_fin.fmt_num(u.get("sub_growth"))))
+            self.set_text_color(*DARK)
+        self.ln(1)
+
     def body(self):
         d = self.data
         self.add_page()
@@ -623,6 +694,8 @@ class Report(FPDF):
 
         self.ln(1)
         self.section_title("3) Fatal Flaw Check")
+        self.render_universal()
+
         for label, status, text in d["flaws"]:
             cmap = {"PASS": GREEN, "WATCH": AMBER, "FLAG": RED}
             self.set_font("Arial", "B", 10)

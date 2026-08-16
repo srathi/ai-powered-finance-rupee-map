@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate branded Warren Buffett-style equity screen PDFs for RupeeMap.in."""
+"""Generate branded Charlie Munger-style equity screen PDFs for RupeeMap.in."""
 import os
 from fpdf import FPDF
 import common_fin  # shared quantitative engine
 
 FONT = os.getenv("PERSONA_FONT", "/Library/Fonts/Arial Unicode.ttf")
-OUT = os.path.join("/tmp", "warren-buffett_reports")
+OUT = os.path.join("/tmp", "charlie-munger_reports")
 LOGO_PATH = os.path.join(OUT, "logo.png")  # drop RMapLogo.png here as 'logo.png' to embed it
 os.makedirs(OUT, exist_ok=True)
 
@@ -37,7 +37,7 @@ DISCLAIMER = (
 )
 
 PERSONA = (
-    "This report is written in the voice and discipline of Warren Buffett, chairman of Berkshire "
+    "This report is written in the voice and discipline of Charlie Munger, vice-chairman of Berkshire Hathaway "
     "Hathaway, who compounded capital at roughly 20% a year for over half a century. His core ideas, "
     "drawn from Benjamin Graham and refined over decades, guide every line below:\n\n"
     "- Only invest in businesses you can understand - stay inside your circle of competence.\n"
@@ -45,7 +45,7 @@ PERSONA = (
     "- Favour honest, shareholder-oriented management that allocates capital wisely (buybacks, dividends, sensible acquisitions).\n"
     "- Demand a margin of safety: a wonderful business is only a buy at a sensible price. Price is what you pay, value is what you get.\n"
     "- Treat Mr. Market as a moody partner - use his fear, never follow his moods.\n\n"
-    "These screens are a first pass - the kind of quick, owner-oriented look Buffett would take before "
+    "These screens are a first pass - the kind of quick, owner-oriented look Munger would take before "
     "deciding whether a business deserves a deeper read. They are educational, not a recommendation to buy or sell."
 )
 
@@ -272,7 +272,7 @@ class Report(FPDF):
             self.set_xy(31, 14)
             self.set_font("Arial", "", 8)
             self.set_text_color(*GREY)
-            self.cell(95, 4, s("Warren Buffett Style Equity Screen"), ln=0)
+            self.cell(95, 4, s("Charlie Munger Style Equity Screen"), ln=0)
             self.set_xy(192, 9)
             self.set_font("Arial", "", 8)
             self.set_text_color(*GREY)
@@ -285,7 +285,7 @@ class Report(FPDF):
             self.set_xy(18, 14)
             self.set_font("Arial", "", 8)
             self.set_text_color(*GREY)
-            self.cell(95, 4, s("Warren Buffett Style Equity Screen"), ln=0)
+            self.cell(95, 4, s("Charlie Munger Style Equity Screen"), ln=0)
             self.set_xy(192, 8)
             self.set_font("Arial", "", 8)
             self.cell(0, 5, s(self.data["ticker"]), align="R", ln=1)
@@ -309,6 +309,8 @@ class Report(FPDF):
     # ---------- watermark ----------
     def _ensure_watermark(self):
         src = LOGO_PATH
+        if not os.path.exists(src):
+            src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
         if not os.path.exists(src):
             return None
         wm = os.path.join(OUT, "logo_watermark.png")
@@ -374,7 +376,7 @@ class Report(FPDF):
             self.set_xy(44, 18)
             self.set_font("Arial", "", 10)
             self.set_text_color(*GREY)
-            self.cell(0, 6, s("Equity Research  -  Warren Buffett Style Screen"), ln=1)
+            self.cell(0, 6, s("Equity Research  -  Charlie Munger Style Screen"), ln=1)
             self.set_xy(44, 26)
         else:
             self.set_xy(18, 16)
@@ -383,7 +385,7 @@ class Report(FPDF):
             self.cell(0, 8, s("RupeeMap.in"), ln=1)
             self.set_font("Arial", "", 9)
             self.set_text_color(*GREY)
-            self.cell(0, 6, s("Equity Research  -  Warren Buffett Style Screen"), ln=1)
+            self.cell(0, 6, s("Equity Research  -  Charlie Munger Style Screen"), ln=1)
             self.set_xy(18, 32)
         self.set_font("Arial", "B", 9)
         self.set_text_color(*TEAL2)
@@ -431,8 +433,9 @@ class Report(FPDF):
         self.set_xy(18, 178)
         self.set_font("Arial", "I", 10)
         self.set_text_color(*GREY)
-        self.multi_cell(174, 5.5, s('"Price is what you pay, value is what you get."  -  Warren Buffett'))
+        self.multi_cell(174, 5.5, s('"It is not necessary to do extraordinary things to get extraordinary results."  -  Charlie Munger'))
 
+        # footer brand line
         # market snapshot (CMP + 52-week range + key stats)
         def _money(v):
             try:
@@ -552,18 +555,17 @@ class Report(FPDF):
 
         self.set_text_color(*DARK)
 
-        # footer brand line
         self.set_xy(18, 250)
         self.set_font("Arial", "", 8)
         self.set_text_color(*GREY)
-        self.multi_cell(174, 5, s("RupeeMap.in (https://rupeemap.in/) applies a Warren Buffett-inspired, evidence-based "
+        self.multi_cell(174, 5, s("RupeeMap.in (https://rupeemap.in/) applies a Charlie Munger-inspired, evidence-based "
                                   "screening method to public companies. This document is for educational and "
                                   "informational purposes only and is not a recommendation to buy or sell any security."))
 
     # ---------- persona ----------
     def persona_page(self):
         self.add_page()
-        self.section_title("The Warren Buffett Persona")
+        self.section_title("The Charlie Munger Persona")
         self.set_font("Arial", "", 10.5)
         self.set_text_color(*DARK)
         self.set_x(18)
