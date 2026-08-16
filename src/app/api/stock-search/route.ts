@@ -22,6 +22,9 @@ interface YahooQuote {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const query = searchParams.get("q")?.trim();
+  // Opt-in restriction: when set, only NSE/BSE (Indian) equities are returned.
+  // Used by the Persona Reports page; other pages keep the full universe.
+  const indianOnly = searchParams.get("indianOnly") === "1";
 
   if (!query || query.length < 2) {
     return NextResponse.json({ results: [] });
@@ -50,9 +53,10 @@ export async function GET(request: NextRequest) {
     const json = await res.json();
     const quotes: YahooQuote[] = json?.quotes ?? [];
 
-    // Filter to equities only, prioritize NSE/BSE
+    // Filter to equities only, optionally restrict to NSE/BSE
     const results = quotes
       .filter((q) => q.quoteType === "EQUITY")
+      .filter((q) => !indianOnly || q.exchange === "NSI" || q.exchange === "BSE")
       .map((q) => ({
         symbol: q.symbol.replace(/\.(NS|BO)$/, ""),
         fullSymbol: q.symbol,

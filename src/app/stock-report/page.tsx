@@ -136,7 +136,9 @@ export default function StockReportPage() {
     }
     setSearching(true);
     try {
-      const res = await fetch(`/api/stock-search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(
+        `/api/stock-search?q=${encodeURIComponent(q)}&indianOnly=1`
+      );
       const data = await res.json();
       setSuggestions(data.results || []);
       setShowDropdown((data.results || []).length > 0);
